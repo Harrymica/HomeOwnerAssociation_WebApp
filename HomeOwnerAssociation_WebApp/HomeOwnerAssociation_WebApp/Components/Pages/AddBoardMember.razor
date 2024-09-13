@@ -1,0 +1,127 @@
+﻿@page "/addboardmember"
+@page "/addboardmember/{id:int?}"
+@layout CustomLayout
+@inject IBoardMemberRepositoryService BoardMemberService
+@rendermode InteractiveServer
+@inject IToastService toast
+
+<BlazoredToasts />
+
+<div class="bg-gray-100 flex-1 p-6 md:mt-16">
+
+<p>@Errormsg</p>
+
+    <div class="row">
+        <div class="col-lg-12">
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">General Form Elements</h5>
+
+
+                    <!-- General Form Elements -->
+                    <div>
+                        <div class="row mb-3">
+                            <label for="inputText" class="col-sm-2 col-form-label">Full Name</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_boardMember.Name" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputEmail" class="col-sm-2 col-form-label">Phone</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_boardMember.Phone" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Email</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_boardMember.Email" type="email" class="form-control">
+                            </div>
+                        </div>
+                        @* <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Email</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_commitee.Email" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Banck Account</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_commitee.BankAccount" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Currency</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_commitee.UsedCurrency" type="text" class="form-control">
+                            </div>
+                        </div> *@
+
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label">Submit Button</label>
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-primary" @onclick="Submit">Submit Form</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End General Form Elements -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+
+    public int? Id { get; set; }
+
+    private BoardMember _boardMember = new BoardMember();
+    public string? Errormsg;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            if (BoardMemberService != null)
+            {
+
+                var result = await BoardMemberService.GetBoardMemberById(Id.Value);
+                _boardMember = result;
+            }
+        }
+
+    }
+
+
+
+    public async Task Submit()
+    {
+        try
+        {
+
+            if (Id != null)
+            {
+                await BoardMemberService.EdithBoardMemeber(_boardMember);
+                toast.ShowInfo($"{_boardMember.Name}, BoardMember Edited Succesfully");
+
+            }
+            else
+            {
+
+                await BoardMemberService.AddBoardMember(_boardMember);
+                toast.ShowSuccess($"{_boardMember.Name}, BoardMember Added Succesfully");
+            }
+        }
+        catch (Exception ex)
+        {
+            toast.ShowError($"An error occurred: {ex.Message}");
+            Errormsg = ex.Message;
+        }
+
+    }
+}

@@ -1,0 +1,236 @@
+﻿@page "/fees"
+@page "/fees/{id:int?}"
+@inject IToastService toast
+@inject IPropertyOwnerService OwnerService
+@inject IFeesService FeeService
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject IConfiguration config
+@inject IDbContextFactory<ApplicationDbContext> _factory
+@layout CustomLayout 
+
+<BlazoredToasts />
+
+<div class="text-center text-lg font-bold mb-2 p-2">
+    <h1>Financial History Report</h1><br />
+    <h1>
+        @_owner.FullName
+    </h1>
+</div>
+
+
+<div class="grid grid-cols-6 gap-4">
+    
+    <div class="col-start-1 col-end-3 ...">Name: @_owner.FullName</div>
+    <div class="col-end-7 col-span-2 ...">Address: @_owner.Address</div>
+    <div class="col-start-1 col-end-3 ...">Phone: @_owner.Phone</div>
+    <div class="col-end-7 col-span-2  ...">Email: @_owner.Email</div>
+</div>
+
+
+<div class="container mx-auto p-4 md:p-6 lg:p-8">
+    <div class="flex flex-wrap -mx-4">
+        <div class="w-full xl:w-1/2 p-4">
+            <div class="bg-white shadow-md rounded p-4">
+                <h2 class="text-lg font-bold mb-4">Fee Details for @_owner.FullName</h2>
+
+
+                <input type="date" @bind="Date"/>
+                    
+                
+                
+                
+                <table class="table-auto w-full mb-4">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="px-4 py-2">ID</th>
+                            <th class="px-4 py-2">Amount</th>
+                            <th class="px-4 py-2">Bank Account</th>
+                            <th class="px-4 py-2">Frequency</th>
+                            <th class="px-4 py-2">TransactionId</th>
+                            <th class="px-4 py-2">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                         @foreach (var fee in _fee)
+                        {
+                        <tr class="bg-gray-100">
+                            <td class="px-4 py-2">@fee.Id</td>
+                            <td class="px-4 py-2">@fee.Amount</td>
+                            <td class="px-4 py-2">@fee.BankAccount</td>
+                            <td class="px-4 py-2">@fee.Frequency</td>
+                            <td class="px-4 py-2">@fee.BankTransactionId</td>
+                            <td class="px-4 py-2">@fee.DateForMonthlyPayment.ToString("dd/MM/yyyy") </td>
+                        </tr>
+                         }
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="w-full xl:w-1/2 p-4">
+            <div class="bg-white shadow-md rounded p-4">
+                <h2 class="text-lg font-bold mb-4">Property Details for </h2>
+                <table class="table-auto w-full mb-4">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="px-4 py-2">ID</th>
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Address</th>
+                            <th class="px-4 py-2">Location</th>
+                            <th class="px-4 py-2">Units</th>
+                            <th class="px-4 py-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var prop in _Newproperty)
+                        {
+                           @foreach(var fees in _fee.Where(u => u.PropertyId == prop.Id)){
+                        <tr class="bg-gray-100">
+                                <td class="px-4 py-2">@prop.Id</td>
+                                <td class="px-4 py-2">@prop.Name</td>
+                                <td class="px-4 py-2">@prop.Address</td>
+                                <td class="px-4 py-2">@prop.Location</td>
+                                <td class="px-4 py-2">@prop.Units</td>
+                                    @if(fees != null)
+                                    {
+                                        <td class="px-4 py-2">
+                                             @fees.Status  
+                                        </td>
+                                    }
+
+                                    else{
+                                        
+                                    <td class="px-4 py-2">
+                                            Not Paid
+                                    </td>
+                                    }
+
+                        </tr>
+                         }
+                                }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+
+    [Parameter]
+
+    public int? Id { get; set; }
+    public List<Fee> _fee = new List<Fee>();
+
+    private DateTime _date = DateTime.Now;
+    public DateTime Date
+    {
+        get => _date;
+        set
+        {
+            _date = value;
+            CheckDate(value);
+        }
+    }
+
+
+    private List<PropertyType> _propertyType = new List<PropertyType>();
+    private PropertyOwners _owner = new PropertyOwners();
+    public List<Property> _Newproperty = new List<Property>();
+
+    private string? SearchInput;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        using var db = await _factory.CreateDbContextAsync();
+        _propertyType = await db.PropertyTypes.ToListAsync();
+
+       
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            using var db = _factory.CreateDbContextAsync();
+            
+
+            var Dfee = await db.Result.Fees.Where(u => u.PropertyId == Id.Value).ToListAsync(); //FeeService.GetAllFeesAsync();
+            _fee = Dfee;
+            if (OwnerService != null)
+            {
+             
+                var result = await OwnerService.GetOwnerById(Id.Value);
+                _owner = result;
+
+                var propertyResult = await db.Result.Properties.Where(u => u.propertyOwnerId == result.Id).ToListAsync();
+                _Newproperty = propertyResult;
+
+
+            }
+        }
+
+    }
+
+
+    private string CreateWebPath(string relativePath)
+    {
+        return Path.Combine(config.GetValue<string>("WebStorageRoot")!, relativePath);
+    }
+
+    public async Task CheckDate(DateTime _date)
+    {
+        using var db = await _factory.CreateDbContextAsync();
+        var fee = await db.Fees.Where(u => u.DateForMonthlyPayment.Month == _date.Month).ToListAsync();
+       // var prop = await db.Properties.Where(u => u.);
+        // if (fee.Count > 0)
+        // {
+        //     _fee.Clear();
+        //     foreach (var item in fee)
+        //     {
+        //         _fee.Add(item);
+        //     }
+        // }
+        // else
+        // {
+        //     _fee.Clear();
+        // }
+
+        _fee = fee;
+        toast.ShowWarning($"{_date.Month} is Selected succesfully");
+        StateHasChanged();
+    }
+
+   public async Task Search()
+    {
+        // if (SearchInput != null)
+        // {
+        //     using var db = await _factory.CreateDbContextAsync();
+        //     var result = db.Fees.Where(u => u.Contains(SearchInput)).ToListAsync();
+
+
+        //     _fee = await result;
+
+        // }
+
+
+    }
+
+    public async Task Delete(Fee fee)
+    {
+        await OwnerService.DeleteOwnerAsync(fee.Id);
+        toast.ShowWarning($"fees is deleted succesfully");
+        await Task.Delay(500);
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+
+    }
+
+    public async Task EditCommitee(int Id)
+    {
+        NavigationManager.NavigateTo($"addpropertyowner/{Id}");
+    }
+
+}

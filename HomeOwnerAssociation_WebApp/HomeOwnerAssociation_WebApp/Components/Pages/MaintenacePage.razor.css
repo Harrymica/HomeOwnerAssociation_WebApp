@@ -1,0 +1,9 @@
+﻿* {
+    text-decoration:none;
+    list-style:disclosure-closed;
+}
+
+.iconimg {
+    height: 20px;
+    width: 20px;
+}

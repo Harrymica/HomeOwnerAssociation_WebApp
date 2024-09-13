@@ -1,0 +1,158 @@
+﻿@page "/addfees"
+@page "/addfees/{id:int?}"
+@layout CustomLayout
+@inject IFeesService FeeService
+@inject IPropertyOwnerService propOwnerService
+@inject IPropertyServiceRepo propService
+@rendermode InteractiveServer
+@inject IToastService toast
+@inject IDbContextFactory<ApplicationDbContext> _factory
+
+<BlazoredToasts/>
+
+<div class="bg-gray-100 flex-1 p-6 md:mt-16">
+
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title text-center">General Form Elements</h5>
+
+                   
+                        <!-- General Form Elements -->
+                        <div>
+                            <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Owner Id</label>
+                            <div class="col-sm-8">
+                                @_propertyOwners.FullName
+                            </div>
+                        </div>
+
+                            <div class="row mb-3">
+                                <label for="inputText" class="col-sm-2 col-form-label">Bank Account</label>
+                                <div class="col-sm-8">
+                                    <input @bind-value="_fee.BankAccount" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="inputEmail" class="col-sm-2 col-form-label">Banck TransactionId</label>
+                                <div class="col-sm-8">
+                                <input @bind-value="_fee.BankTransactionId" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Amount</label>
+                                <div class="col-sm-8">
+                                <input @bind-value="_fee.Amount" type="number" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Date</label>
+                                <div class="col-sm-8">
+                                <input @bind-value="_fee.DateForMonthlyPayment" type="date" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Frequency</label>
+                                <div class="col-sm-8">
+                                <input @bind-value="_fee.Frequency" type="text" class="form-control">
+                                </div>
+                            </div>
+
+                            
+                        
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label"> Property || @_fee.PropertyId</label>
+                                <div class="col-sm-8">
+                                    <InputSelect @bind-Value="_fee.PropertyId" type="text" class="form-control">
+                                        <option>Select Property</option>>
+                                        @foreach (var item in _property)
+                                    {
+                                          <option value="@item.Id">@item.Name</option>
+                       
+                                    }
+                                    </InputSelect>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">Submit Button</label>
+                                <div class="col-sm-10">
+                                    <button type="submit" class="btn btn-primary" @onclick="Submit">Submit Form</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- End General Form Elements -->
+                    
+
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+
+@code{
+
+    [Parameter]
+
+    public int? Id { get; set; } 
+
+    private Fee _fee = new Fee();
+    private PropertyOwners _propertyOwners = new PropertyOwners();
+    private List<Property> _property = new List<Property>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = _factory.CreateDbContextAsync();
+        var prop = await db.Result.Properties.Where(u => u.propertyOwnerId == Id.Value).ToListAsync();
+        _property = prop;
+
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if(Id != null)
+        {
+            if (propOwnerService != null)
+            {
+
+
+                var result = await propOwnerService.GetOwnerById(Id.Value);
+                _propertyOwners = result;
+
+            }
+        }
+
+    }
+
+
+
+    public async Task Submit()
+    {
+        if(Id != null)
+        {
+            _fee.Status = "Paid";
+            //_fee.PropertyOwnersId = _propertyOwners.Id;
+            await FeeService.AddFees(_fee);
+           // await FeeService.EditFees(_fee);
+            toast.ShowInfo("Fees Edited Succesfully");
+
+        }
+        else
+        {
+            //_fee.PropertyOwnersId = _propertyOwners.Id;  
+            await FeeService.AddFees(_fee);
+            toast.ShowSuccess("Fees Added Succesfully");
+        }
+    }
+
+    
+
+ }
+

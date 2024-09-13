@@ -1,0 +1,560 @@
+﻿@page "/financial"
+@using HomeOwnerAssociation_WebApp.Services.ExceptionalBudgetingRepositry
+@inject IBudgetingRepositoryService budgetSerV
+@inject IExceptionalBudgetingService EBudgetServ
+@inject IFeesService FeesServ
+@inject IPropertyServiceRepo propServ
+@inject IMaintenanceService mainServ
+@inject IBank_AccountService bankServbankServ
+@inject IVendorService VendServ
+@inject IPropertyOwnerService OwnerService
+@inject IDbContextFactory<ApplicationDbContext> _factory
+@rendermode InteractiveServer
+@inject IJSRuntime jSRuntime
+@inject IToastService toast
+@layout CustomLayout
+
+<BlazoredToasts />
+@* <div class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <div class="container">
+        <a class="navbar-brand" href="">Financial Management</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+            <ul class="navbar-nav flex-grow-1">
+                <li class="nav-item">
+                    <div class="dropdown dropright">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Financial Options
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" href="#" @onclick="@(p => ShowTable("budgeting"))">Budgeting</a>
+                            <a class="dropdown-item" href="#" @onclick="@(p=> ShowTable("maintenance"))">Maintenance</a>
+                            <a class="dropdown-item" href="#" @onclick="@(p => ShowTable("bank"))">Bank Accounts</a>
+                            <a class="dropdown-item" href="#" @onclick="@(p=> ShowTable("fees"))">Fees</a>
+                            <a class="dropdown-item" href="#" @onclick="@(p=> ShowTable("exceptional"))">Exceptional Budgeting</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div> *@
+@if (displayPdf == true)
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card h-300">
+                <div id="iframeId">
+
+                    Hello world
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+<div class="flex justify-end relative inline-block text-left ">
+
+    <button>
+        
+        <input type="date" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded" @bind="Date" />
+        <span class="ml-2">Pick Date</span>
+    </button>
+
+        <div>
+            <button type="submit" @onclick="@(p=> DownloadFile("report.pdf", "pdf-content"))">
+                <img src="/save.png" class="iconimg" style="height:35px" />
+
+
+            </button>
+        </div>
+        <div>
+            <button type="submit" @onclick="@(p=> OpentoIframe("iframeId", "pdf-content"))">
+                <img src="/print.png" class="iconimg" style="height:35px" />
+
+            </button>
+
+        </div>
+
+
+  
+    <div>
+        <button type="submit" class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                id="menu-button" aria-expanded="true" aria-haspopup="true" @onclick="ShowDropdownMenu">
+
+            <p>Select Table</p> <i class="fas fa-ellipsis-v"></i>
+
+
+        </button>
+    </div>
+
+    <div class="mybtn">
+        <div class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+            <div class="py-1" role="none">
+
+                <button type="submit" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Select</button>
+                <a class="dropdown-item" @onclick="@(p => ShowTable("budgeting"))">Budgeting</a>
+            </div>
+            <div class="py-1" role="none">
+                <a class="dropdown-item" @onclick="@(p=> ShowTable("maintenance"))">Maintenance</a>
+            </div>
+            <div class="py-1" role="none">
+                <a class="dropdown-item" @onclick="@(p=> ShowTable("Fees"))">Fees</a>
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+</div>
+
+
+<div id="pdf-content">
+
+<h1>Financial Management</h1>
+<br/>
+@if (currentTable == "maintenance")
+{
+    
+    <div class="row" id="pdf-content">
+    <div class="col-md-12">
+
+        <h2 class="text-center">Maintenace Reports</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Owner</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _maintenances)
+                {
+                    var owner = _owner.Where(u => u.Id == @item.Id);
+                    @foreach (var W in owner)
+                    {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Name</td>
+                        <td>@W.FullName</td>
+                        <td>@item.Schedules.ToString("dd/MM/yyyy")</td>
+                        <td>@item.Description</td>
+                    </tr>
+                        
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+}
+
+
+@if (currentTable == "budgeting")
+{
+    
+
+    <div class="row" id="pdf-content">
+    <div class="col-md-12">
+        <h2>Budgeting History</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Budget Name</th>
+                    <th>Owner Name</th>
+                    <th>Type </th>
+                    <th>Cost</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                    @foreach (var bud in _budget)
+                {
+                        //var owner = _owner.Where(u => u.Id == @bud.propertyOwnersId).ToList();
+                        @* @foreach (var W in owner)
+                        { *@
+                        <tr>
+                            <td>@bud.Id</td>
+                                <td>@bud.Name</td>
+                                <td>@owner.FullName</td>
+                                <td>@Enum.GetName(typeof(TypeOfBudget), bud.typeOfBudget)</td>
+                            <td>@bud.Cost</td>
+                            <td>@bud.DateOfExpenses.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    @* } *@
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* <div class="row">
+    <div class="col-md-12">
+        <h2>Budgeting</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Budgeting</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var financialManagement in FinancialManagements)
+                {
+                    @foreach (var budgeting in financialManagement.Budgeting)
+                    {
+                        <tr>
+                            <td>@@(link unavailable)</td>
+                            <td>@budgeting.Description</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Bank Accounts</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Bank Accounts</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var financialManagement in FinancialManagements)
+                {
+                    @foreach (var bankAccount in financialManagement.BankAccounts)
+                    {
+                        <tr>
+                            <td>@@(link unavailable)</td>
+                            <td>@bankAccount.AccountNumber</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Fees</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Fees</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var financialManagement in FinancialManagements)
+                {
+                    @foreach (var fee in financialManagement.Fees)
+                    {
+                        <tr>
+                            <td>@@(link unavailable)</td>
+                            <td>@fee.Amount</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Exceptional Budgeting</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Exceptional Budgeting</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var financialManagement in FinancialManagements)
+                {
+                    <tr>
+                        <td>@@(link unavailable)</td>
+                        <td>@@financialManagement.ExeptionalBudgetings.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div> *@
+}
+    
+    @if(currentTable == "Fees")
+    {
+        <div class="row" id="pdf-content">
+            <div class="col-md-12">
+                <h2>Fees History</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Property </th>
+                            <th>Owner </th>
+                            <th>Amount </th>
+                            <th>Frequency </th>
+                            <th>Bank Acoount</th>
+                            <th>TransactionId</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _Fees)
+                        {
+                           // var owner = _owner.Where(u => u.Id == @item.PropertyOwnersId).ToList();
+                           @*  @foreach (var W in owner)
+                            { *@
+                                var prop = _property.Where(u => u.Id == @item.PropertyId).ToList();
+                                foreach(var p in prop)
+                                {
+                                    
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>@p.Name</td>
+                                    <td>@owner.FullName</td>
+                                    <td>@item.Amount</td>
+                                    <td>@item.Frequency</td>
+                                    <td>@item.BankAccount</td>
+                                    <td>@item.BankTransactionId</td>
+                                    <td>@item.Status</td>
+                                    <td>@item.DateForMonthlyPayment.ToString("dd/MM/yyyy")</td>
+                                </tr>
+                                }
+                            @* } *@
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+
+
+
+@code{
+
+    private string currentTable = "maintenance";
+
+    private DateTime _date = DateTime.Now;
+    public DateTime Date
+    {
+        get => _date;
+        set
+        {
+            _date = value;
+            //CheckDate(value);
+        }
+    }
+
+    private void ShowTable(string table)
+    {
+        currentTable = table;
+
+        jSRuntime.InvokeVoidAsync("showDropdownMenu");
+        StateHasChanged();
+    }
+    private bool showDropdown = false;
+
+    [JSInvokable]
+    public  void ShowDropdownMenu()
+    {
+        jSRuntime.InvokeVoidAsync("showDropdownMenu");
+    }
+
+    public List<PropertyOwners> _owner = new List<PropertyOwners>();
+    public PropertyOwners owner = new PropertyOwners();
+    public List<Fee> _Fees = new List<Fee>();
+    private List<Property> _property = new List<Property>();
+    private List<PropertyType> _propertyType = new List<PropertyType>();
+    private List<MaintenanceHistory> _maintenances = new List<MaintenanceHistory>();
+    private List<Budgeting> _budget = new List<Budgeting>();
+
+    private TypeOfBudget _typeOfBudget = new TypeOfBudget();
+
+    private List<FinancialManagement> FinancialManagements { get; set; } = new List<FinancialManagement>();
+    private bool displayPdf = false;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            jSRuntime.InvokeVoidAsync("closeDropdownMenu");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _property = await propServ.GetAllPropertiresAsync();
+
+        using var db = _factory.CreateDbContextAsync();
+        _maintenances = await mainServ.GetAllMaintenanceAsync();
+        var propertyOwner = await OwnerService.GetAllOwnersAsync();
+        _owner = propertyOwner;
+
+        foreach (var item in _property)
+        {
+
+            owner = await db.Result.PropertyOwners.Where(u => u.Id == item.propertyOwnerId).FirstOrDefaultAsync();
+        }
+
+
+        var bud = await budgetSerV.GetAllBudgetingAsync();
+        _budget = bud;
+
+        var fee = await FeesServ.GetAllFeesAsync();
+        _Fees = fee;
+
+
+        
+        //MenuItems = property.Select(p => new MenuItem { Item = p, ShowDropdown = false }).ToList();
+
+      
+        _propertyType = await db.Result.PropertyTypes.ToListAsync();
+
+        //_owner = await db.PropertyOwners.ToListAsync();
+    }
+
+    public async Task DownloadFile(string fileName, string Id)
+    {
+        string htmlContent = await jSRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(htmlContent);
+        // Remove the Action table head
+        var actionHeader = doc.DocumentNode.SelectSingleNode("//th[text()='Actions']");
+        if (actionHeader != null)
+        {
+            actionHeader.Remove();
+        }
+        // Remove the Action table data
+        var actionData = doc.DocumentNode.SelectNodes("//td[contains(@class, 'border px-2 py-2')]");
+        if (actionData != null)
+        {
+            foreach (var node in actionData)
+            {
+                node.Remove();
+            }
+        }
+
+        var saveButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> DownloadFile(\"report.pdf\", \"pdf-content\"))']");
+        if (saveButton != null)
+        {
+            saveButton.Remove();
+        }
+        var printButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> OpentoIframe(\"iframeId\", \"pdf-content\"))']");
+        if (printButton != null)
+        {
+            printButton.Remove();
+        }
+        var images = doc.DocumentNode.SelectNodes("//img");
+        if (images != null)
+        {
+            foreach (var image in images)
+            {
+                image.Remove();
+            }
+        }
+
+
+        htmlContent = doc.DocumentNode.OuterHtml;
+
+
+
+        //var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        var pdf = new PdfGenerator();
+        pdf.DownloadPdf(jSRuntime, fileName, htmlContent, "Financial Report");
+    }
+
+    public async Task OpentoIframe(string iframeId, string Id)
+    {
+        displayPdf = true;
+        // var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        string htmlContent = await jSRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+
+
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(htmlContent);
+        // Remove the Action table head
+        var actionHeader = doc.DocumentNode.SelectSingleNode("//th[text()='Actions']");
+        if (actionHeader != null)
+        {
+            actionHeader.Remove();
+        }
+        // Remove the Action table data
+        var actionData = doc.DocumentNode.SelectNodes("//td[contains(@class, 'border px-2 py-2')]");
+        if (actionData != null)
+        {
+            foreach (var node in actionData)
+            {
+                node.Remove();
+            }
+        }
+        var saveButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> DownloadFile(\"report.pdf\", \"pdf-content\"))']");
+        if (saveButton != null)
+        {
+            saveButton.Remove();
+        }
+        var printButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> OpentoIframe(\"iframeId\", \"pdf-content\"))']");
+        if (printButton != null)
+        {
+            printButton.Remove();
+        }
+        var images = doc.DocumentNode.SelectNodes("//img");
+        if (images != null)
+        {
+            foreach (var image in images)
+            {
+                image.Remove();
+            }
+        }
+
+
+
+        htmlContent = doc.DocumentNode.OuterHtml;
+        var pdf = new PdfGenerator();
+        pdf.ViewPdf(jSRuntime, iframeId, htmlContent, "Financial Report");
+    }
+    public async Task CheckDate(DateTime _date)
+    {
+        using var db = await _factory.CreateDbContextAsync();
+
+        if(currentTable == "Fees")
+        {
+            
+        toast.ShowWarning($"{_date.Month} is Selected succesfully");
+        StateHasChanged();
+        }
+    }
+    public class NewMenu
+    {
+        public string Menu { get; set; }
+        public bool ShowDropdown { get; set; }
+    }
+}

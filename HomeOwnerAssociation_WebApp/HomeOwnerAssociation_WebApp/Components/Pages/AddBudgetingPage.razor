@@ -1,0 +1,145 @@
+﻿@page "/addbudgeting"
+@page "/addbudgeting/{id:int?}"
+@layout CustomLayout
+@inject IPropertyOwnerService propOwnerService
+@inject IMaintenanceService _mainServ
+@inject IBudgetingRepositoryService budgetServ
+@inject IToastService toast
+@rendermode InteractiveServer
+@inject IDbContextFactory<ApplicationDbContext> _factory
+
+
+<BlazoredToasts />
+
+<div class="bg-gray-100 flex-1 p-6 md:mt-16">
+
+    @_propertyOwners.FullName
+    <div class="row">
+        <div class="col-lg-12">
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Maintenance Form</h5>
+
+
+                    <!-- General Form Elements -->
+                    <div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Name </label>
+                            <div class="col-sm-8">
+
+                                <input @bind-value="_budgeting.Name" type="text" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="inputText" class="col-sm-2 col-form-label">Description</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_budgeting.Description" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputEmail" class="col-sm-2 col-form-label">Cost</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_budgeting.Cost" type="number" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Date</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_budgeting.DateOfExpenses" type="date" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Expences Type</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_budgeting.ExpensesType" type="text" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label"> Type of Expences</label>
+                            <div class="col-sm-8">
+                                <InputSelect @bind-Value="_budgeting.typeOfBudget" type="text" class="form-control">
+                                    <option>Select Property</option>>
+
+                                    <option value="@TypeOfBudget.Income">Income</option>
+                                    <option value="@TypeOfBudget.Expences">OutCome</option>
+
+                                    
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label">Submit Button</label>
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-primary" @onclick="Submit">Submit Form</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End General Form Elements -->
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@code
+{
+
+    [Parameter]
+
+    public int? Id { get; set; }
+
+    private Budgeting _budgeting = new Budgeting();
+
+    private Fee _fee = new Fee();
+    private PropertyOwners _propertyOwners = new PropertyOwners();
+    private List<Property> _property = new List<Property>();
+
+    private MaintenanceHistory _maintenance = new MaintenanceHistory();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = _factory.CreateDbContextAsync();
+        var prop = await db.Result.Properties.Where(u => u.propertyOwnerId == Id.Value).ToListAsync();
+        _property = prop;
+
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            if (propOwnerService != null)
+            {
+
+
+                var result = await propOwnerService.GetOwnerById(Id.Value);
+                _propertyOwners = result;
+
+
+            }
+        }
+
+    }
+
+    public async Task Submit()
+    {
+        _maintenance.OwnerId = _propertyOwners.Id;
+        
+        
+        await budgetServ.AddBudgeting(_budgeting);
+
+        
+        toast.ShowSuccess($"{_maintenance.Name}, Added Successfully");
+        
+    }
+}

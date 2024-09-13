@@ -1,0 +1,122 @@
+﻿@page "/commitee"
+@layout CustomLayout
+@inject IComiteeServiceRespository CommiteeService
+@inject IToastService toast
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+
+<BlazoredToasts/>
+
+<div class="bg-gray-100 flex-1 p-6 md:mt-16">
+
+    <div class="relative">
+        <input type="search" placeholder="Search Commitee..." class="w-full pl-10 pr-16 py-2 text-sm text-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <button class="absolute right-0 top-0 h-full flex items-center justify-center w-10 bg-blue-500 hover:bg-blue-700 text-white rounded-r-md">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </button>
+        <span class="absolute inset-y-0 left-0 flex items-center pl-2">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="(link unavailable)">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </span>
+    </div>
+
+
+
+    <div class="myTable">
+
+<!--Grid Form-->
+<div class="flex flex-1  flex-col md:flex-row lg:flex-row mx-2">
+    <div class="mb-2 border-solid border-gray-300 rounded border shadow-sm w-full">
+        <div class="bg-gray-200 px-2 py-3 border-solid border-gray-200 border-b">
+            Commitee
+                <button class="bg-transparent hover:bg-green-500 text-green-dark font-semibold hover:text-white py-2 px-4 border border-green hover:border-transparent rounded">
+                    <a href="/addcommitee" class="" style="cursor:pointer; text-decoration:none">
+                        +Add Commitee
+                    </a>
+                </button>
+        </div>
+        <div class="p-3">
+            <table class="table-responsive w-full rounded">
+                <thead>
+                    <tr>
+                        <th class="border w-1/4 px-4 py-2"> Name</th>
+                        <th class="border w-1/6 px-4 py-2">Position</th>
+                        <th class="border w-1/6 px-4 py-2">Phone</th>
+                        <th class="border w-1/6 px-4 py-2">Email</th>
+                        <th class="border w-1/7 px-4 py-2">Bank Account</th>
+                        <th class="border w-1/7 px-4 py-2">Currency </th>
+                        <th class="border w-1/5 px-4 py-2">Actions</th>
+                    </tr>
+                </thead>
+                    @if(commiteeMembers != null)
+                    {
+                        foreach(var item in commiteeMembers)
+                        {
+                            
+                         <tbody>
+                    <tr>
+                        <td class="border px-4 py-2">@item.FullName</td>
+                        <td class="border px-4 py-2">@item.Position</td>
+                        <td class="border px-4 py-2">@item.Phone</td>
+                        <td class="border px-4 py-2">@item.Email</td>
+                        <td class="border px-4 py-2">@item.BankAccount</td>
+                        <td class="border px-4 py-2">
+                            @item.UsedCurrency
+                        </td>
+                        <td class="border px-2 py-2">
+                            <a class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-white" >
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-white" @onclick="() => EditCommitee(item.Id)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-red-500" @onclick="() => Delete(item)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    
+                </tbody>
+
+                        }
+                    }
+            </table>
+        </div>
+    </div>
+</div>
+<!--/Grid Form-->
+    </div>
+</div>
+
+
+
+@code {
+    
+
+    public List<Commitee> commiteeMembers = new List<Commitee>();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var commitee = await CommiteeService.GetAllCommiteesAsync();
+        commiteeMembers = commitee;
+    }
+
+    public async Task Delete(Commitee commitee)
+    {
+        await CommiteeService.DeleteCommiteeAsync(commitee.Id);
+        toast.ShowWarning($"{commitee.FullName} is deleted succesfully");
+        await Task.Delay(2000);
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+
+    }
+
+    public async Task EditCommitee(int Id)
+    {
+        NavigationManager.NavigateTo($"addcommitee/{Id}");
+    }
+}

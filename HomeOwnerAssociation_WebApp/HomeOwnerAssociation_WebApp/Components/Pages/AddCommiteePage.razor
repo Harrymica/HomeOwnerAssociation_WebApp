@@ -1,0 +1,124 @@
+﻿@page "/addcommitee"
+@page "/addcommitee/{id:int?}"
+@layout CustomLayout
+@inject IComiteeServiceRespository commiteeService
+@rendermode InteractiveServer
+@inject IToastService toast
+
+<BlazoredToasts/>
+<div class="bg-gray-100 flex-1 p-6 md:mt-16">
+
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">General Form Elements</h5>
+
+                   
+                        <!-- General Form Elements -->
+                        <div>
+                            <div class="row mb-3">
+                                <label for="inputText" class="col-sm-2 col-form-label">Full Name</label>
+                                <div class="col-sm-8">
+                                    <input @bind-value="_commitee.FullName" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="inputEmail" class="col-sm-2 col-form-label">Position</label>
+                                <div class="col-sm-8">
+                                    <input @bind-value="_commitee.Position" type="email" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Phone</label>
+                                <div class="col-sm-8">
+                                    <input @bind-value="_commitee.Phone" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Email</label>
+                                <div class="col-sm-8">
+                                    <input @bind-value="_commitee.Email" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Banck Account</label>
+                                <div class="col-sm-8">
+                                    <input @bind-value="_commitee.BankAccount" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Currency</label>
+                                <div class="col-sm-8">
+                                    <input @bind-value="_commitee.UsedCurrency" type="text" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">Submit Button</label>
+                                <div class="col-sm-10">
+                                    <button type="submit" class="btn btn-primary" @onclick="Submit">Submit Form</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- End General Form Elements -->
+                    
+
+                    
+                     
+                    
+
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+
+@code{
+    [Parameter]
+
+    public int? Id { get; set; } 
+
+    private Commitee _commitee = new Commitee();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(Id != null)
+        {
+            if (commiteeService != null)
+            {
+
+                var result = await commiteeService.GetCommiteeById(Id.Value);
+                _commitee = result;
+            }
+        }
+
+    }
+
+   
+
+    public async Task Submit()
+    {
+        if(Id != null)
+        {
+            await commiteeService.EdithCommitees(_commitee);
+            toast.ShowInfo($"{_commitee.FullName}, Committee Edited Succesfully");
+
+        }
+        else
+        {
+            
+        await commiteeService.AddCommitees(_commitee);
+        toast.ShowSuccess($"{_commitee.FullName}, Committee Added Succesfully");
+        }
+    }
+
+    
+
+ }

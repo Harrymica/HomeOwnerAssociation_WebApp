@@ -1,0 +1,374 @@
+﻿@page "/addpropertyowner"
+@page "/addpropertyowner/{id:int?}"
+@layout CustomLayout
+@inject IPropertyOwnerService OwnerService
+@inject IPropertyServiceRepo _PropertyServ
+@inject IVendorService _VendorServ
+@rendermode InteractiveServer
+@inject IConfiguration config
+@inject IToastService toast
+@inject IDbContextFactory<ApplicationDbContext> _factory
+
+<BlazoredToasts />
+
+<div class="bg-gray-100 flex-1 p-6 md:mt-16">
+
+    <p>@Errormsg</p>
+
+    <div class="row">
+        <div class="col-lg-12">
+
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title text-center">Add New House Owner</h1>
+
+
+                    <!-- General Form Elements -->
+                    <div>
+                        <div class="row mb-3">
+                            <label for="inputText" class="col-sm-2 col-form-label">Owner Name</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_owner.FullName" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputEmail" class="col-sm-2 col-form-label">Phone</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_owner.Phone" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Email</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_owner.Email" type="email" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Address</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_owner.Address" type="text" class="form-control">
+                            </div>
+                        </div>
+                        
+
+                       @*  Form for Adding Property *@
+                        <div>
+                          <h1 class="card-title text-center">Add Owner's Property</h1>
+
+                        <div class="row mb-3">
+                            <label for="inputText" class="col-sm-2 col-form-label">Property Name</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_Newproperty.Name" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="Address" class="col-sm-2 col-form-label">Address</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_Newproperty.Address" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Location</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_Newproperty.Location" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Logo</label>
+                            <div class="col-sm-8">
+                                <InputFile id="image" OnChange="LoadFiles"
+                                           name="file"
+                                           type="file" class="form-control" multiple accept=".png, .jpg, .jpeg"> </InputFile>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Units</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_Newproperty.Units" type="number" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">PropertyType</label>
+
+                            <div class="col-sm-8">
+                                <InputSelect @bind-Value="_Newproperty.Units" type="text" class="form-control">
+                                    <option disabled>Select option</option>
+                                    @foreach (var items in _propertyType)
+                                    {
+                                        <option value="@items.Id"> @items.UnitType</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        
+                        </div>
+
+                        <div>
+                            <h1 class="card-title text-center">Add Vendor </h1>
+                                <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Name</label>
+                                <div class="col-sm-8">
+                                <input @bind-value="_vendor.Name" type="text" class="form-control">
+                                </div>
+                                </div>
+                                <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Work Experience/ Duty</label>
+                                <div class="col-sm-8">
+                                <input @bind-value="_vendor.Description" type="text" class="form-control">
+                                </div>
+                                </div><div class="row mb-3">
+                                    <label for="text" class="col-sm-2 col-form-label">Contact</label>
+                                <div class="col-sm-8">
+                                     <input @bind-value="_vendor.ContactInformation" type="text" class="form-control">
+                                </div>
+                            </div>
+                            
+                            @* <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">Submit Button</label>
+                                <div class="col-sm-10">
+                                    <button type="submit" class="btn btn-primary" @onclick="()=> AddVendor(_vendor)">Add Vendor</button>
+                                </div>
+                            </div> *@
+                        </div>
+
+                        <div>
+                            <h1 class="card-title text-center">Add Assessment </h1>
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Name</label>
+                                <div class="col-sm-8">
+                                    <input @bind-value="_assessment.Amount" type="number" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="text" class="col-sm-2 col-form-label">Date</label>
+                                <div class="col-sm-8">
+                                    <input  type="date" class="form-control" @bind="Date">
+                                </div>
+                            </div>
+                            
+
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label">Submit Button</label>
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-primary" @onclick="Submit">Submit Form</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End General Form Elements -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+
+    public int? Id { get; set; }
+
+    private PropertyOwners _owner = new PropertyOwners();
+    public string? Errormsg;
+
+    private List<Property> _property = new List<Property>();
+    private Property _Newproperty = new Property();
+
+    private Vendor _vendor = new Vendor();
+    private Assessment _assessment = new Assessment();
+    private DeedRestriction _deedRestriction = new DeedRestriction();
+
+    private DateTime _date = DateTime.Now;
+    public DateTime Date
+    {
+        get => _date;
+        set
+        {
+            _assessment.DueDate = value;
+            //CheckDate(value);
+        }
+    }
+
+    // public Property newProp
+    // {
+    //     get => _Newproperty;
+    //     set
+    //     {
+    //         _Newproperty = value;
+    //         AddProperty(value);
+    //     }
+    // }
+
+    private IBrowserFile? file;
+    private long maxSize = 1024 * 1024 * 10;
+
+    private List<PropertyType> _propertyType = new List<PropertyType>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = await _factory.CreateDbContextAsync();
+        _property = await db.Properties.ToListAsync();
+        _propertyType = await db.PropertyTypes.ToListAsync();
+
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            if (OwnerService != null)
+            {
+                using var db = _factory.CreateDbContextAsync();
+                var result = await OwnerService.GetOwnerById(Id.Value);
+                _owner = result;
+
+                var propertyResult = await db.Result.Properties.Where(u => u.propertyOwnerId == result.Id).FirstOrDefaultAsync();
+                _Newproperty = propertyResult;
+            }
+        }
+
+    }
+
+    public async Task Submit()
+    {
+
+        try
+        {
+            string relativePath = await CaptureFile();
+            _Newproperty.Logo = relativePath;
+
+            if (Id != null)
+            {
+                _Newproperty.propertyOwnerId = _owner.Id;
+                await OwnerService.EditOwner(_owner);
+
+                toast.ShowInfo($"{_owner.FullName}, Property Owner Edited Succesfully");
+
+            }
+            else
+            {
+                await OwnerService.AddPropOwner(_owner);
+
+
+                _Newproperty.propertyOwnerId = _owner.Id;
+                _Newproperty.VendorId = _vendor.Id;
+
+                _Newproperty.AssessmentId = _assessment.Id;
+                _assessment.DueDate = Date;
+                //_assessment.PropertyId = _Newproperty.Id;
+                await AddProperty(_Newproperty);
+
+                _vendor.PropertyId = _Newproperty.Id;
+                _assessment.PropertyId = _Newproperty.Id;
+
+
+                await AddVendor(_vendor);
+                await AddAssessment(_assessment);
+                await Task.Delay(1000);
+
+                toast.ShowSuccess("Assessment  Added Succesfully");
+
+                toast.ShowSuccess($"{_owner.FullName},  Added Succesfully");
+                toast.ShowSuccess($"Vendor, {_vendor.Name}  Added Succesfully");
+            }
+        }
+        catch (Exception ex)
+        {
+            toast.ShowError($"An error occurred: {ex.Message}");
+            Errormsg = ex.Message;
+        }
+
+    }
+
+    public async Task AddProperty(Property prop)
+    {
+        // if(Id != null)
+        // {
+
+        if (prop != null)
+        {
+            using var db = await _factory.CreateDbContextAsync();
+
+            string relativePath = await CaptureFile();
+
+            // var newProperties = new Property
+            // {
+            //     propertyOwnerId = prop.propertyOwnerId,
+            //     PropertyType = prop.PropertyType,
+            //     Location = prop.Location,
+            //     Address = prop.Address,
+            //     Name = prop.Name,
+            //     Logo = relativePath,
+            //     Units = prop.Units,
+            //     VendorId = _vendor.Id
+
+            // };
+            await db.AddAsync(prop);
+            await db.SaveChangesAsync();
+
+            toast.ShowInfo($"{prop.Name} Added Successfully to {_owner.FullName}");
+        }
+        // }
+        // else
+        // {
+        //     toast.ShowError("Sorry you cannot add a Property without a property owner here");
+        // }
+    }
+
+    public async Task AddVendor(Vendor vendor)
+    {
+
+
+        await _VendorServ.AddVendor(vendor);
+        toast.ShowSuccess($"{vendor.Name} added Successfully");
+
+    }
+    public async Task AddAssessment(Assessment assessment)
+    {
+        using var db = _factory.CreateDbContextAsync();
+
+        await db.Result.Assessments.AddAsync(assessment);
+        await db.Result.SaveChangesAsync();
+    }
+
+
+    private async void LoadFiles(InputFileChangeEventArgs e)
+    {
+        file = e.File;
+    }
+
+    private async Task<string> CaptureFile()
+    {
+        if (file is null)
+        {
+            return "";
+        }
+        try
+        {
+            string NewFileName = Path.ChangeExtension(Path.GetRandomFileName(), Path.GetExtension(file.Name));
+
+            string path = Path.Combine(config.GetValue<string>("FileStorage")!, "profile", NewFileName);
+
+            string relativePath = Path.Combine("profile", NewFileName);
+            Directory.CreateDirectory(Path.Combine(Path.Combine(config.GetValue<string>("FileStorage")!, "profile")));
+
+            await using FileStream fs = new(path, FileMode.Create);
+            await file.OpenReadStream(maxSize).CopyToAsync(fs);
+
+            return relativePath;
+        }
+        catch (Exception ex)
+        {
+            //errors.Add($"File: {file.Name} Error: {ex.Message}");
+            throw;
+        }
+
+
+    }
+}
+

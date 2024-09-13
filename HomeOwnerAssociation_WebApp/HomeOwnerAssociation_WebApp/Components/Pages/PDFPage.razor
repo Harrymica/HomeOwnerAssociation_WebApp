@@ -1,0 +1,77 @@
+﻿@page "/pdf"
+@layout CustomLayout
+@inject IJSRuntime jsRuntime
+@rendermode InteractiveServer
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary" @onclick="@(p=> DownloadFile("report.pdf", "pdf-content"))">Download Pdf</button>
+            <button type="submit" class="btn btn-info" @onclick="@(p=> OpentoIframe("iframeId", "pdf-content"))">View PDf</button>
+            <button type="submit" class="btn btn-warning" @onclick="@(p=> OpenToNewTab("report.pdf", "pdf-content"))">View in new Tab</button>
+        </div>
+    </div>
+    <br/>
+
+
+    <div id="pdf-content">
+        <!-- Your HTML content here -->
+        <h1>Hello World!</h1>
+        <p>This is a sample HTML content.</p>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+            </tr>
+            <tr>
+                <td>John Doe</td>
+                <td>30</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+           <div class="card h-300">
+               <div id="iframeId">
+
+                   Hello world
+               </div>
+           </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+
+    public async Task DownloadFile(string fileName, string Id)
+    {
+        string htmlContent = await jsRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+
+
+        //var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        var pdf = new PdfGenerator();
+        //pdf.DownloadPdf(jsRuntime, fileName, htmlContent);
+    }
+    public async Task OpentoIframe(string iframeId, string Id)
+    {
+        // var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        string htmlContent = await jsRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+
+        var pdf = new PdfGenerator();
+       // pdf.ViewPdf(jsRuntime, iframeId, htmlContent);
+    }
+    public async Task OpenToNewTab(string fileName, string Id)
+    {
+         string htmlContent = await jsRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+
+        //var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        var pdf = new PdfGenerator();
+       // pdf.ViewNewTabPdf(jsRuntime, fileName, htmlContent);
+    }
+}

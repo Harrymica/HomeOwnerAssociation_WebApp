@@ -1,0 +1,33 @@
+﻿@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+
+<div class="Page">
+
+    <div class="body">
+
+        @Body
+
+
+    </div>
+
+</div>
+
+
+@code {
+    private string? currentUrl;
+
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = "/Login";//NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
+

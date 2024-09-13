@@ -1,0 +1,307 @@
+﻿@page "/maintenancepage"
+@page "/maintenancepage/{id:int?}"
+@layout CustomLayout
+@inject IBank_AccountService bankService
+@inject IPropertyOwnerService OwnerService
+@inject IMaintenanceService _mainServ
+@inject IDbContextFactory<ApplicationDbContext> _factory
+@inject IToastService toast
+@rendermode InteractiveServer
+@inject IJSRuntime jSRuntime
+
+
+<BlazoredToasts />
+
+<div  id="pdf-content">
+
+   
+    <div class="text-center text-lg font-bold mb-2 p-2">
+        <h1>Maintenace History Report</h1><br />
+        <h1>
+            @_owner.FullName
+        </h1>
+    </div>
+
+    <div class="grid grid-cols-6 gap-4">
+
+        <div class="col-start-1 col-end-3 ...">Name: @_owner.FullName</div>
+        <div class="col-end-7 col-span-2 ...">Address: @_owner.Address</div>
+        <div class="col-start-1 col-end-3 ...">Phone: @_owner.Phone</div>
+        <div class="col-end-7 col-span-2  ...">Email: @_owner.Email</div>
+    </div>
+
+    @if (displayPdf == true)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card h-300">
+                    <div id="iframeId">
+
+                        Hello world
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+
+     <div class="container mx-auto p-4">
+        
+       
+        <div class="flex justify-end relative inline-block text-left ">
+
+
+            <button>
+
+                <input type="date" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded" @bind="Date" />
+                <span class="ml-2">Pick Date</span>
+            </button>
+            <div>
+                <button type="submit" @onclick="@(p=> DownloadFile("report.pdf", "pdf-content"))">
+                    <img src="/save.png" class="iconimg" style="height:40px; width:40px" />
+
+
+                </button>
+            </div>
+            <div>
+                <button type="submit" @onclick="@(p=> OpentoIframe("iframeId", "pdf-content"))">
+                    <img src="/print.png" class="iconimg" style="height:40px; width:40px" />
+
+                </button>
+
+            </div>
+            <div>
+                <a href="/addmaintenance/@Id.Value" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-4">
+
+                    <i class="fas fa-plus"></i>
+                    Add Maintenances
+                </a>
+            </div>
+
+        </div>
+     
+       
+            
+
+            <!-- Financial History Card -->
+            <div class="bg-white shadow-md rounded-lg p-6 col-span-full">
+                <h2 class="text-xl font-semibold mb-2">Maintenace History</h2>
+            
+            <table class="table table-striped w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="py-2">Id</th>
+                            <th class="py-2">Name</th>
+                            <th class="py-2">Description</th>
+                            <th class="py-2">Property</th>
+                            <th class="py-2">Amount</th>
+                            <th class="py-2">Date</th>
+                        </tr>
+                    </thead>
+               
+                    <tbody>
+                    @foreach(var item in _maintenance)
+                    {
+                        var property = _Newproperty.Where(s => s.Id == item.propertyId).ToList();
+                        @foreach (var prop in _Newproperty.Where(s => s.Id == item.propertyId))
+                            {
+                        <tr>
+                                <td class="py-2">@item.Id</td>
+                                <td class="py-2">@item.Name</td>
+                                <td class="py-2">@item.Description</td>
+                            
+                                <td class="py-2">@prop.Name</td>
+
+                                <td class="py-2">@item.ReserveFunds</td>
+                                <td class="py-2">@item.Schedules.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                     } 
+                            }
+                    
+                    </tbody>
+                </table>
+
+
+            </div>
+    </div> 
+
+</div>
+
+
+@code{
+
+    [Parameter]
+    public int? Id { get; set; }
+    private BankAccount _bank = new BankAccount();
+    public List<Fee> _fee = new List<Fee>();
+    private PropertyOwners _owner = new PropertyOwners();
+
+    private List<MaintenanceHistory> _maintenance = new List<MaintenanceHistory>();
+    public List<Property> _Newproperty = new List<Property>();
+
+    private DateTime _date = DateTime.Now;
+    public DateTime Date
+    {
+        get => _date;
+        set
+        {
+            _date = value;
+            CheckDate(value);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            using var db = _factory.CreateDbContextAsync();
+
+
+            var Dfee = await db.Result.Fees.Where(u => u.PropertyId == Id.Value).ToListAsync();
+            _fee = Dfee;
+            if (OwnerService != null)
+            {
+
+                var result = await OwnerService.GetOwnerById(Id.Value);
+                _owner = result;
+               
+                _maintenance = await db.Result.Maintenances.Where(s => s.OwnerId == _owner.Id).ToListAsync();
+
+                var propertyResult = await db.Result.Properties.Where(u => u.propertyOwnerId == result.Id).ToListAsync();
+                _Newproperty = propertyResult;
+
+
+            }
+        }
+
+    }
+
+    public async Task CheckDate(DateTime _date)
+    {
+        using var db = await _factory.CreateDbContextAsync();
+        var bud = await db.Maintenances.Where(u => u.Schedules.Month == _date.Month && u.OwnerId == _owner.Id).ToListAsync();
+
+
+        _maintenance = bud;
+        toast.ShowWarning($"{_date.Month} is Selected succesfully");
+        StateHasChanged();
+    }
+
+    private bool displayPdf = false;
+
+
+    public async Task DownloadFile(string fileName, string Id)
+    {
+        string htmlContent = await jSRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+       
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(htmlContent);
+        // Remove the Action table head
+        var actionHeader = doc.DocumentNode.SelectSingleNode("//th[text()='Actions']");
+        if (actionHeader != null)
+        {
+            actionHeader.Remove();
+        }
+        // Remove the Action table data
+        var actionData = doc.DocumentNode.SelectNodes("//td[contains(@class, 'border px-2 py-2')]");
+        if (actionData != null)
+        {
+            foreach (var node in actionData)
+            {
+                node.Remove();
+            }
+        }
+
+        var saveButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> DownloadFile(\"report.pdf\", \"pdf-content\"))']");
+        if (saveButton != null)
+        {
+            saveButton.Remove();
+        }
+        var printButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> OpentoIframe(\"iframeId\", \"pdf-content\"))']");
+        if (printButton != null)
+        {
+            printButton.Remove();
+        }
+        var images = doc.DocumentNode.SelectNodes("//img");
+        if (images != null)
+        {
+            foreach (var image in images)
+            {
+                image.Remove();
+            }
+        }
+
+
+        htmlContent = doc.DocumentNode.OuterHtml;
+
+
+
+        //var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        var pdf = new PdfGenerator();
+        pdf.DownloadPdf(jSRuntime, fileName, htmlContent, "Financial Report");
+    }
+
+    public async Task OpentoIframe(string iframeId, string Id)
+    {
+        displayPdf = true;
+        // var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        string htmlContent = await jSRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+
+
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(htmlContent);
+        // Remove the Action table head
+        var actionHeader = doc.DocumentNode.SelectSingleNode("//th[text()='Actions']");
+        if (actionHeader != null)
+        {
+            actionHeader.Remove();
+        }
+        // Remove the Action table data
+        var actionData = doc.DocumentNode.SelectNodes("//td[contains(@class, 'border px-2 py-2')]");
+        if (actionData != null)
+        {
+            foreach (var node in actionData)
+            {
+                node.Remove();
+            }
+        }
+        var saveButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> DownloadFile(\"report.pdf\", \"pdf-content\"))']");
+        if (saveButton != null)
+        {
+            saveButton.Remove();
+        }
+        var printButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> OpentoIframe(\"iframeId\", \"pdf-content\"))']");
+        if (printButton != null)
+        {
+            printButton.Remove();
+        }
+        var images = doc.DocumentNode.SelectNodes("//img");
+        if (images != null)
+        {
+            foreach (var image in images)
+            {
+                image.Remove();
+            }
+        }
+        
+
+
+        htmlContent = doc.DocumentNode.OuterHtml;
+        var pdf = new PdfGenerator();
+        pdf.ViewPdf(jSRuntime, iframeId, htmlContent, "Maintenance Report");
+    }
+}
+
+
+
+
+
+
