@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "/*_/_.csproj",
+      "use": "@vercel/static-build",
+      "config": {
+        "framework": ".netcore",
+        "buildCommand": "dotnet build -c Release",
+        "outputDirectory": "wwwroot"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "index.html"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "wwwroot/js/$1"
+    },
+    {
+      "src": "/css/(.*)",
+      "dest": "wwwroot/css/$1"
+    }
+  ]
+}
+
