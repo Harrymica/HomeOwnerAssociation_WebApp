@@ -24,7 +24,8 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BankAccount = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UsedCurrency = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UsedCurrency = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PropertyId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -207,6 +208,28 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PropertyOwners",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HOAId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PropertyOwners", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PropertyOwners_HOA_HOAId",
+                        column: x => x.HOAId,
+                        principalTable: "HOA",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Rule",
                 columns: table => new
                 {
@@ -256,6 +279,12 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BankAccounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BankAccounts_PropertyOwners_PropertyOwnersId",
+                        column: x => x.PropertyOwnersId,
+                        principalTable: "PropertyOwners",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -373,7 +402,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OwnerId = table.Column<int>(type: "int", nullable: false),
                     propertyId = table.Column<int>(type: "int", nullable: false),
                     Schedules = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReserveFunds = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -396,34 +424,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PropertyOwners",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    HOAId = table.Column<int>(type: "int", nullable: true),
-                    MaintenanceHistoryId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PropertyOwners", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PropertyOwners_HOA_HOAId",
-                        column: x => x.HOAId,
-                        principalTable: "HOA",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_PropertyOwners_Maintenances_MaintenanceHistoryId",
-                        column: x => x.MaintenanceHistoryId,
-                        principalTable: "Maintenances",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Properties",
                 columns: table => new
                 {
@@ -438,16 +438,23 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                     propertyOwnerId = table.Column<int>(type: "int", nullable: true),
                     FeesId = table.Column<int>(type: "int", nullable: true),
                     BudgetingId = table.Column<int>(type: "int", nullable: false),
+                    ExeptionalBudgetingId = table.Column<int>(type: "int", nullable: false),
                     VendorId = table.Column<int>(type: "int", nullable: false),
                     AssessmentId = table.Column<int>(type: "int", nullable: false),
                     RestrictionId = table.Column<int>(type: "int", nullable: false),
                     FinancialHistoryId = table.Column<int>(type: "int", nullable: false),
+                    CommiteeId = table.Column<int>(type: "int", nullable: true),
                     HOAId = table.Column<int>(type: "int", nullable: true),
                     MaintenanceHistoryId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Properties", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Properties_Commitees_CommiteeId",
+                        column: x => x.CommiteeId,
+                        principalTable: "Commitees",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Properties_HOA_HOAId",
                         column: x => x.HOAId,
@@ -520,7 +527,7 @@ namespace HomeOwnerAssociation_WebApp.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "AccessFailedCount", "Address", "City", "ConcurrencyStamp", "Country", "Email", "EmailConfirmed", "FullName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "1", 0, "Unknown", "Unknown", "d183716a-32b1-4ad7-89e3-db4ae7a7d9a0", "Unknown", "Admin007@gmail.com", true, "Emmanuel Chinonso", true, null, "ADMIN007@GMAIL.COM", "ADMIN007@GMAIL.COM", "AQAAAAIAAYagAAAAEG2rB2DQL47BOFpA+ldXgXdWh1HMMA1VvXz1UBr1XtUEuLfIv2OLODDtK3QMGwAPAg==", "Unknown", true, "d44cb38d-96ff-4b61-a226-6df06bc34d38", false, "Admin007@gmail.com" });
+                values: new object[] { "1", 0, "Unknown", "Unknown", "a7220c3d-1168-4ff7-b54f-5559435f2b86", "Unknown", "Admin007@gmail.com", true, "Emmanuel Chinonso", true, null, "ADMIN007@GMAIL.COM", "ADMIN007@GMAIL.COM", "AQAAAAIAAYagAAAAEMxh5gDKlF4ibZFhM8cI8vOsc387e2uP5n5YkrfNOL9w4xPSRecNiNHPEnGr90sbWw==", "Unknown", true, "354f7f1c-a312-4ff8-a543-2a728bcfc9dd", false, "Admin007@gmail.com" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Assessments_PropertyId",
@@ -575,7 +582,8 @@ namespace HomeOwnerAssociation_WebApp.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ExeptionalBudgetings_PropertyId",
                 table: "ExeptionalBudgetings",
-                column: "PropertyId");
+                column: "PropertyId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Fees_FinancialManagementId",
@@ -608,6 +616,11 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                 column: "HOAId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Properties_CommiteeId",
+                table: "Properties",
+                column: "CommiteeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Properties_HOAId",
                 table: "Properties",
                 column: "HOAId");
@@ -633,11 +646,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                 column: "HOAId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PropertyOwners_MaintenanceHistoryId",
-                table: "PropertyOwners",
-                column: "MaintenanceHistoryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Rule_HOAId",
                 table: "Rule",
                 column: "HOAId");
@@ -661,14 +669,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                 column: "FinancialManagementId",
                 principalTable: "FinancialManagement",
                 principalColumn: "Id");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_BankAccounts_PropertyOwners_PropertyOwnersId",
-                table: "BankAccounts",
-                column: "PropertyOwnersId",
-                principalTable: "PropertyOwners",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Budgetings_FinancialManagement_FinancialManagementId",
@@ -751,9 +751,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                 name: "Budgetings");
 
             migrationBuilder.DropTable(
-                name: "Commitees");
-
-            migrationBuilder.DropTable(
                 name: "DeedRestrictions");
 
             migrationBuilder.DropTable(
@@ -796,13 +793,16 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                 name: "Properties");
 
             migrationBuilder.DropTable(
+                name: "Commitees");
+
+            migrationBuilder.DropTable(
+                name: "Maintenances");
+
+            migrationBuilder.DropTable(
                 name: "PropertyOwners");
 
             migrationBuilder.DropTable(
                 name: "PropertyTypes");
-
-            migrationBuilder.DropTable(
-                name: "Maintenances");
 
             migrationBuilder.DropTable(
                 name: "FinancialManagement");

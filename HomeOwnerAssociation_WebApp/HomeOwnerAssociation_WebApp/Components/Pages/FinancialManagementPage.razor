@@ -15,33 +15,7 @@
 @layout CustomLayout
 
 <BlazoredToasts />
-@* <div class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-    <div class="container">
-        <a class="navbar-brand" href="">Financial Management</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-            <ul class="navbar-nav flex-grow-1">
-                <li class="nav-item">
-                    <div class="dropdown dropright">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Financial Options
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#" @onclick="@(p => ShowTable("budgeting"))">Budgeting</a>
-                            <a class="dropdown-item" href="#" @onclick="@(p=> ShowTable("maintenance"))">Maintenance</a>
-                            <a class="dropdown-item" href="#" @onclick="@(p => ShowTable("bank"))">Bank Accounts</a>
-                            <a class="dropdown-item" href="#" @onclick="@(p=> ShowTable("fees"))">Fees</a>
-                            <a class="dropdown-item" href="#" @onclick="@(p=> ShowTable("exceptional"))">Exceptional Budgeting</a>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div> *@
+
 @if (displayPdf == true)
 {
     <div class="row">
@@ -313,19 +287,19 @@
                             <th>Property </th>
                             <th>Owner </th>
                             <th>Amount </th>
+                            <th>Balance </th>
                             <th>Frequency </th>
-                            <th>Bank Acoount</th>
+                            <th>Acoount</th>
                             <th>TransactionId</th>
                             <th>Status</th>
                             <th>Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in _Fees)
                         {
-                           // var owner = _owner.Where(u => u.Id == @item.PropertyOwnersId).ToList();
-                           @*  @foreach (var W in owner)
-                            { *@
+                          
                                 var prop = _property.Where(u => u.Id == @item.PropertyId).ToList();
                                 foreach(var p in prop)
                                 {
@@ -335,14 +309,16 @@
                                     <td>@p.Name</td>
                                     <td>@owner.FullName</td>
                                     <td>@item.Amount</td>
+                                    <td>@item.RemainingDept</td>
                                     <td>@item.Frequency</td>
                                     <td>@item.BankAccount</td>
                                     <td>@item.BankTransactionId</td>
                                     <td>@item.Status</td>
                                     <td>@item.DateForMonthlyPayment.ToString("dd/MM/yyyy")</td>
+                                    <td></td>
                                 </tr>
                                 }
-                            @* } *@
+                            
                         }
                     </tbody>
                 </table>

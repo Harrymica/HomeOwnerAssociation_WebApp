@@ -11,8 +11,8 @@ namespace HomeOwnerAssociation_WebApp.Models
         public string Location { get; set; }
         public string Logo { get; set; }
         public string Address { get; set; }
-        public PropertyType? PropertyType { get; set; } // e.g., single-family home, condo, townhouse
-        public int? PropertyTypeId { get; set; }
+        public PropertyType? PropertyType { get; set; } //e.g., single-family home, condo, townhouse 
+        public int? PropertyTypeId { get; set; } 
         public int Units { get; set; } 
         public PropertyOwners? propertyOwner { get; set; }
 
@@ -24,6 +24,9 @@ namespace HomeOwnerAssociation_WebApp.Models
 
         public List<Budgeting>? Budgeting { get; set; }
         public int BudgetingId { get; set; } 
+
+        public ExeptionalBudgeting ExeptionalBudgeting { get; set; }
+        public int ExeptionalBudgetingId { get; set; }  
         public List<Vendor>? Vendor { get; set; }
         public int VendorId { get; set; }
         public List<Assessment> Assessment { get; set; }
@@ -31,12 +34,12 @@ namespace HomeOwnerAssociation_WebApp.Models
         public List<DeedRestriction>? Restriction { get; set; }
         public int RestrictionId { get; set; }
 
-        public List<FinancialManagement>? FinancialHistory { get; set; }
+        public List<FinancialManagement>? FinancialHistory { get; set; } 
 
+        public int FinancialHistoryId { get; set; } 
 
-        public int FinancialHistoryId { get; set; }
-
-
+        public Commitee? Commitee { get; set; } 
+        public int? CommiteeId { get; set; }
 
 
     }

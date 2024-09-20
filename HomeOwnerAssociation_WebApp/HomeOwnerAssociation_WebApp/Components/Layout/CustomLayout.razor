@@ -1,5 +1,4 @@
-﻿
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IdentityUserAccessor UserAccessor
 @inject UserManager<ApplicationUser> UserManager
@@ -63,10 +62,12 @@
                 <!-- end link -->
                 
 
-                <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">Budgeting</p>
+                <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">
+                    Budgeting
+                    </p>
 
                 <!-- link -->
-                <a href="./email.html" class="mb-3 capitalize font-medium text-sm hover:text-teal-600 transition ease-in-out duration-500">
+                <a href="/listbudget" class="mb-3 capitalize font-medium text-sm hover:text-teal-600 transition ease-in-out duration-500">
                     <i class="fad fa-envelope-open-text text-xs mr-2"></i>
                     Regular Budgeting
                 </a>
@@ -79,8 +80,6 @@
                 <!-- end link -->
 
                
-
-
                 <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">HOA Property</p>
 
                 <!-- link -->
@@ -89,8 +88,9 @@
                     Properties
                 </a>
                 <!-- end link -->
+
                 <!-- link -->
-                <a href="./alert.html" class="mb-3 capitalize font-medium text-sm hover:text-teal-600 transition ease-in-out duration-500">
+                <a href="/type" class="mb-3 capitalize font-medium text-sm hover:text-teal-600 transition ease-in-out duration-500">
                     <i class="fad fa-whistle text-xs mr-2"></i>
                     PropertyType
                 </a>
@@ -441,8 +441,7 @@
 
         userName = await UserManager.GetUserNameAsync(user);
 
-        // var commitee = await CommiteeService.GetAllCommiteesAsync();
-        // commiteeMembers = commitee;
+        
     }
 
 }

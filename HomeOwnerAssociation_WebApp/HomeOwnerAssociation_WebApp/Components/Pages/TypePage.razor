@@ -1,0 +1,294 @@
+﻿@page "/type"
+@layout CustomLayout
+@using HomeOwnerAssociation_WebApp.Services.PropertyTypeService
+@inject IPropertyServiceRepo propertyService
+@inject IPropertyTypeServiceRepo TypeServ
+@inject IToastService toast
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject IConfiguration config
+@inject IDbContextFactory<ApplicationDbContext> _factory
+@inject IJSRuntime jSRuntime
+
+<BlazoredToasts />
+
+
+@if (displayPdf == true)
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card h-300">
+                <div id="iframeId">
+
+                    Converting to Pdf....
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+<div class="bg-gray-100 flex-1 p-6 md:mt-16" >
+
+
+    <div class="flex justify-end relative inline-block text-left ">
+
+        <div>
+            <button type="submit" @onclick="@(p=> DownloadFile("report.pdf", "pdf-content"))">
+                <img src="/save.png" class="iconimg" style="height:35px" />
+
+
+            </button>
+        </div>
+        <div>
+            <button type="submit" @onclick="@(p=> OpentoIframe("iframeId", "pdf-content"))">
+                <img src="/print.png" class="iconimg" style="height:35px" />
+
+            </button>
+
+        </div>
+        <div>
+            <a href="/addpropertyowner" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-4">
+
+                <i class="fas fa-plus"></i>
+                Add Owner
+            </a>
+        </div>
+
+    </div>
+    <div class="relative">
+        <input @bind-value="@SearchInput" type="search" placeholder="Search Commitee..." class="w-full pl-10 pr-16 py-2 text-sm text-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <button class="absolute right-0 top-0 h-full flex items-center justify-center w-10 bg-blue-500 hover:bg-blue-700 text-white rounded-r-md" @onclick="Search">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </button>
+        <span class="absolute inset-y-0 left-0 flex items-center pl-2">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="(link unavailable)">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </span>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6 col-span-full" >
+    <h2 class="text-xl font-semibold mb-2"> Types of Property</h2>
+        <div id="pdf-content">
+        <table class="table table-striped w-full text-left" >
+        <thead>
+            <tr>
+                <th class="py-2">Id</th>
+                <th class="py-2">Name</th>
+                <th class="py-2">Monthly Fee</th>
+                <th class="py-2">Actions</th>
+                
+            </tr>
+        </thead>
+   
+        @if (_propertyType != null)
+    {
+     foreach (var item in _propertyType)
+     {
+
+         <tbody>
+             <tr>
+
+                 <td class="border px-1 py-2">
+                     @item.Id
+                     
+                 </td>
+                 <td class="border px-4 py-2">@item.UnitType</td>
+                 <td class="border px-4 py-2">@item.MonthlyFee</td>                                                                         
+
+                 <td class="border px-2 py-2">
+                     <a class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-white">
+                         <i class="fas fa-eye"></i>
+                     </a>
+                     <button class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-white" @onclick="() => EditCommitee(item.Id)">
+                         <i class="fas fa-edit"></i>
+                     </button>
+                     <button class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-red-500" @onclick="() => Delete(item)">
+                         <i class="fas fa-trash"></i>
+                     </button>
+                 </td>
+             </tr>
+
+         </tbody>
+
+     }
+ }
+
+       </table>
+
+    </div>
+    
+    </div>
+
+    
+</div>
+
+
+
+@code {
+
+
+   
+    private List<PropertyType> _propertyType = new List<PropertyType>();
+
+    private string? SearchInput;
+    private bool displayPdf = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var type = await TypeServ.GetAllPropertiresTypeAsync();
+        _propertyType = type;
+
+    }
+
+    private string CreateWebPath(string relativePath)
+    {
+        return Path.Combine(config.GetValue<string>("WebStorageRoot")!, relativePath);
+    }
+
+    public async Task Search()
+    {
+        if (SearchInput != null)
+        {
+            using var db = await _factory.CreateDbContextAsync();
+            var result = db.PropertyTypes.Where(u => u.UnitType.Contains(SearchInput)).ToListAsync();
+
+
+            _propertyType = await result;
+
+        }
+
+
+    }
+
+    public async Task Delete(PropertyType prop)
+    {
+        try
+        {
+            await TypeServ.DeletePropertyTypeAsync(prop.Id);
+            toast.ShowWarning($"{prop.UnitType} is deleted succesfully");
+            await Task.Delay(500);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            toast.ShowWarning($"{ex.Message}");
+        }
+
+
+    }
+
+    public async Task EditCommitee(int Id)
+    {
+        NavigationManager.NavigateTo($"addtype/{Id}");
+    }
+
+    public async Task DownloadFile(string fileName, string Id)
+    {
+        string htmlContent = await jSRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(htmlContent);
+        // Remove the Action table head
+        var actionHeader = doc.DocumentNode.SelectSingleNode("//th[text()='Actions']");
+        if (actionHeader != null)
+        {
+            actionHeader.Remove();
+        }
+        // Remove the Action table data
+        var actionData = doc.DocumentNode.SelectNodes("//td[contains(@class, 'border px-2 py-2')]");
+        if (actionData != null)
+        {
+            foreach (var node in actionData)
+            {
+                node.Remove();
+            }
+        }
+
+        var saveButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> DownloadFile(\"report.pdf\", \"pdf-content\"))']");
+        if (saveButton != null)
+        {
+            saveButton.Remove();
+        }
+        var printButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> OpentoIframe(\"iframeId\", \"pdf-content\"))']");
+        if (printButton != null)
+        {
+            printButton.Remove();
+        }
+        var images = doc.DocumentNode.SelectNodes("//img");
+        if (images != null)
+        {
+            foreach (var image in images)
+            {
+                image.Remove();
+            }
+        }
+
+
+        htmlContent = doc.DocumentNode.OuterHtml;
+
+
+
+        //var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        var pdf = new PdfGenerator();
+        pdf.DownloadPdf(jSRuntime, fileName, htmlContent, "Property Report");
+    }
+
+    public async Task OpentoIframe(string iframeId, string Id)
+    {
+        displayPdf = true;
+        // var html = await jsRuntime.InvokeAsync<string>("GetHtml");
+        string htmlContent = await jSRuntime.InvokeAsync<string>("GetElementHtml", Id);
+        // Use the htmlContent variable to generate the PDF
+
+
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(htmlContent);
+        // Remove the Action table head
+        var actionHeader = doc.DocumentNode.SelectSingleNode("//th[text()='Actions']");
+        if (actionHeader != null)
+        {
+            actionHeader.Remove();
+        }
+        // Remove the Action table data
+        var actionData = doc.DocumentNode.SelectNodes("//td[contains(@class, 'border px-2 py-2')]");
+        if (actionData != null)
+        {
+            foreach (var node in actionData)
+            {
+                node.Remove();
+            }
+        }
+        var saveButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> DownloadFile(\"report.pdf\", \"pdf-content\"))']");
+        if (saveButton != null)
+        {
+            saveButton.Remove();
+        }
+        var printButton = doc.DocumentNode.SelectSingleNode("//button[@onclick='@(p=> OpentoIframe(\"iframeId\", \"pdf-content\"))']");
+        if (printButton != null)
+        {
+            printButton.Remove();
+        }
+        var images = doc.DocumentNode.SelectNodes("//img");
+        if (images != null)
+        {
+            foreach (var image in images)
+            {
+                image.Remove();
+            }
+        }
+
+
+
+        htmlContent = doc.DocumentNode.OuterHtml;
+        var pdf = new PdfGenerator();
+        pdf.ViewPdf(jSRuntime, iframeId, htmlContent, "Property Report");
+    }
+
+}

@@ -12,17 +12,12 @@ namespace HomeOwnerAssociation_WebApp.Models
         public string Description { get; set;}
         public decimal Cost { get; set; }
 
-
         public string ExpensesType { get; set; }
         
-
-        //public PropertyOwners propertyOwners { get; set; }
-        //public int propertyOwnersId { get; set; }
-
         public TypeOfBudget typeOfBudget { get; set; }
        // public TypeOfExpenses typeOfExpences { get; set; }
 
-        public Property Property { get; set; }
+        public Property Propertys { get; set; }
 
 
         [ForeignKey(nameof(Property))]

@@ -171,44 +171,87 @@
                         </thead>
                         @if (properties != null)
                         {
-                            foreach (var item in properties)
+                            foreach (var item in MenuItems)
                             {
 
                                 <tbody>
                                     <tr>
 
                                         <td class="border px-1 py-2">
-                                            @if (string.IsNullOrWhiteSpace(item.Logo) == false)
+                                        @if (string.IsNullOrWhiteSpace(item.Item.Logo) == false)
                                             {
-                                                <img src="@CreateWebPath(item.Logo)" style="height:40px; width:40px; border-radius:15px" />
+                                            <img src="@CreateWebPath(item.Item.Logo)" style="height:40px; width:40px; border-radius:15px" />
                                             }
                                         </td>
-                                        <td class="border px-4 py-2">@item.Name</td>
-                                        <td class="border px-4 py-2">@item.Address</td>
-                                        <td class="border px-4 py-2">@item.Location</td>
+                                    <td class="border px-4 py-2">@item.Item.Name</td>
+                                    <td class="border px-4 py-2">@item.Item.Address</td>
+                                    <td class="border px-4 py-2">@item.Item.Location</td>
                                         <td class="border px-4 py-2">
-                                            @foreach (var Typeitems in _propertyType.Where(u => u.Id == item.Units))
+                                        @foreach (var Typeitems in _propertyType.Where(u => u.Id == item.Item.Units))
                                             {
                                                 <option> @Typeitems.UnitType</option>
                                             }
                                         </td>
 
-                                        <td class="border px-4 py-2">@item.Units</td>
+                                    <td class="border px-4 py-2">@item.Item.Units</td>
 
 
 
 
-                                        <td class="border px-2 py-2">
-                                            <a class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-white">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-white" @onclick="() => EditCommitee(item.Id)">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-red-500" @onclick="() => Delete(item)">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
+                                    <td class="border px-2 py-2">
+                                        <div class="relative inline-block text-left">
+
+                                            <div>
+                                                <button type="submit" class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                                                        id="menu-button" aria-expanded="true" aria-haspopup="true" @onclick="()=> item.ShowDropdown = !item.ShowDropdown">
+
+                                                    <i class="fas fa-ellipsis-v"></i>
+
+
+                                                </button>
+                                            </div>
+                                            @if (item.ShowDropdown)
+                                            {
+                                                <div class="mybtn">
+                                                    <div class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                                                        <div class="py-1" role="none">
+
+                                                            <button type="submit" @onclick="() => EditCommitee(item.Item.Id)" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Edit</button>
+                                                           
+                                                        </div>
+
+                                                        <div class="py-1" role="none">
+
+                                                            <a href="budgeting/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-5">Budgets</a>
+                                                            <a href="/addbudgeting/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Add Budget</a>
+                                                        </div>
+
+                                                        <div class="py-1" role="none">
+                                                            <a href="/fees/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">Fees</a>
+                                                            <a href="/addfees/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">AddFees</a>
+                                                        </div>
+                                                        <div class="py-1" role="none">
+                                                            <a href="/maintenancepage/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-3">Maintenance History</a>
+                                                            <a href="/addmaintenance/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-4">Add Maintenances</a>
+                                                           
+                                                        </div>
+                                                        <div class="py-1" role="none">
+                                                            <button type="submit" @onclick="() => Delete(item.Item)" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-6">Delete</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+
+
+                                        </div>
+
+                                        <button class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-white" @onclick="() => EditCommitee(item.Item.Id)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="bg-teal-300 cursor-pointer rounded p-1 mx-1 text-red-500" @onclick="() => Delete(item.Item)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
                                     </tr>
 
                                 </tbody>
@@ -236,6 +279,8 @@
     //[SupplyParameterFromForm(FormName = "addproperty")]
     private Property _property { get; set; } = new();
 
+
+    public List<Menu> MenuItems { get; set; } = new List<Menu>();
     private string? SearchInput;
     private bool displayPdf = false;
 
@@ -268,6 +313,8 @@
 
                 var propertyResult = await db.Result.Properties.Where(u => u.propertyOwnerId == result.Id).ToListAsync();
                 properties = propertyResult;
+
+                MenuItems = properties.Select(p => new Menu { Item = p, ShowDropdown = false }).ToList();
             }
         }
 
@@ -541,6 +588,12 @@
     public async Task Click()
     {
         clicked = true;
+    }
+
+    public class Menu
+    {
+        public Property Item { get; set; }
+        public bool ShowDropdown { get; set; }
     }
 
 }

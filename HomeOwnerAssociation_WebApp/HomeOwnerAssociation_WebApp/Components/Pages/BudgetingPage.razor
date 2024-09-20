@@ -2,7 +2,8 @@
 @page "/budgeting/{id:int?}"
 @layout CustomLayout
 @inject IBank_AccountService bankService
-@inject IPropertyOwnerService OwnerService
+@* @inject IPropertyOwnerService OwnerService *@
+@inject IPropertyServiceRepo propService
 @inject IBudgetingRepositoryService _budgetServ
 @inject IDbContextFactory<ApplicationDbContext> _factory
 @inject IToastService toast
@@ -14,17 +15,17 @@
 <div class="text-center text-lg font-bold mb-2 p-2">
     <h1>Budgeting History Report</h1><br />
     <h1>
-        @_owner.FullName
+        @_getproperty.Name
     </h1>
 </div>
 
-<div class="grid grid-cols-6 gap-4">
+@* <div class="grid grid-cols-6 gap-4">
 
     <div class="col-start-1 col-end-3 ...">Name: @_owner.FullName</div>
     <div class="col-end-7 col-span-2 ...">Address: @_owner.Address</div>
     <div class="col-start-1 col-end-3 ...">Phone: @_owner.Phone</div>
     <div class="col-end-7 col-span-2  ...">Email: @_owner.Email</div>
-</div>
+</div> *@
 
 
 <div class="container mx-auto p-4">
@@ -79,10 +80,12 @@
     private BankAccount _bank = new BankAccount();
     public List<Fee> _fee = new List<Fee>();
     public List<Budgeting> _budget = new List<Budgeting>();
-    private PropertyOwners _owner = new PropertyOwners();
+   // private PropertyOwners _owner = new PropertyOwners();
 
     private List<MaintenanceHistory> _maintenance = new List<MaintenanceHistory>();
     public List<Property> _Newproperty = new List<Property>();
+
+    private Property _getproperty = new Property();
 
     private DateTime _date = DateTime.Now;
     public DateTime Date
@@ -110,16 +113,18 @@
 
             var Dfee = await db.Result.Fees.Where(u => u.PropertyId == Id.Value).ToListAsync(); //FeeService.GetAllFeesAsync();
             _fee = Dfee;
-            if (OwnerService != null)
+            if (propService != null)
             {
+                var result = await propService.GetPropertyById(Id.Value);
+                _getproperty = result;
 
-                var result = await OwnerService.GetOwnerById(Id.Value);
-                _owner = result;
+                // var result = await propService.GetPropertyById(Id.Value);
+                // _owner = result;
 
                 var bud = await _budgetServ.GetAllBudgetingAsync();
                 _budget = bud;
 
-                _maintenance = await db.Result.Maintenances.Where(s => s.OwnerId == _owner.Id).ToListAsync();
+                _maintenance = await db.Result.Maintenances.Where(s => s.propertyId == _getproperty.Id).ToListAsync();
 
                 var propertyResult = await db.Result.Properties.Where(u => u.propertyOwnerId == result.Id).ToListAsync();
                 _Newproperty = propertyResult;

@@ -9,9 +9,8 @@ namespace HomeOwnerAssociation_WebApp.Models
 
         public string Name { get; set; }
         public string Description { get; set; }
-        public List<PropertyOwners> Owner { get; set; }
-        public int OwnerId { get; set; }
-        public List<Property> property { get;  set; }
+      
+        public List<Property>? property { get;  set; }
         public int propertyId { get; set; }
         public DateTime Schedules { get; set; }
         public decimal ReserveFunds { get; set; }
@@ -31,7 +30,6 @@ namespace HomeOwnerAssociation_WebApp.Models
 
     }
 
-    
 
     public class Vendor
     {
@@ -40,7 +38,7 @@ namespace HomeOwnerAssociation_WebApp.Models
         public string Description { get; set; }
         public string ContactInformation { get; set; }
 
-        public Property Property { get; set; }
+        public Property Propertys { get; set; }
 
         [ForeignKey(nameof(Property))]
         public int PropertyId { get; set; }
@@ -51,9 +49,8 @@ namespace HomeOwnerAssociation_WebApp.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Content { get; set; }
-       // public AccessControl AccessControl { get; set; }
+       
     }
-
 
     public class WorkOrder
     {

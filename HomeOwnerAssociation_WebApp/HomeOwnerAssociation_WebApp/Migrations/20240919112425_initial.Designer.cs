@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwnerAssociation_WebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240912072331_initial")]
+    [Migration("20240919112425_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -100,7 +100,7 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                             AccessFailedCount = 0,
                             Address = "Unknown",
                             City = "Unknown",
-                            ConcurrencyStamp = "d183716a-32b1-4ad7-89e3-db4ae7a7d9a0",
+                            ConcurrencyStamp = "a7220c3d-1168-4ff7-b54f-5559435f2b86",
                             Country = "Unknown",
                             Email = "Admin007@gmail.com",
                             EmailConfirmed = true,
@@ -108,10 +108,10 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                             LockoutEnabled = true,
                             NormalizedEmail = "ADMIN007@GMAIL.COM",
                             NormalizedUserName = "ADMIN007@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEG2rB2DQL47BOFpA+ldXgXdWh1HMMA1VvXz1UBr1XtUEuLfIv2OLODDtK3QMGwAPAg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMxh5gDKlF4ibZFhM8cI8vOsc387e2uP5n5YkrfNOL9w4xPSRecNiNHPEnGr90sbWw==",
                             PhoneNumber = "Unknown",
                             PhoneNumberConfirmed = true,
-                            SecurityStamp = "d44cb38d-96ff-4b61-a226-6df06bc34d38",
+                            SecurityStamp = "354f7f1c-a312-4ff8-a543-2a728bcfc9dd",
                             TwoFactorEnabled = false,
                             UserName = "Admin007@gmail.com"
                         });
@@ -283,6 +283,9 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UsedCurrency")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -353,7 +356,8 @@ namespace HomeOwnerAssociation_WebApp.Migrations
 
                     b.HasIndex("FinancialManagementId");
 
-                    b.HasIndex("PropertyId");
+                    b.HasIndex("PropertyId")
+                        .IsUnique();
 
                     b.ToTable("ExeptionalBudgetings");
                 });
@@ -478,9 +482,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("ReserveFunds")
                         .HasColumnType("decimal(18,2)");
 
@@ -515,6 +516,12 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("BudgetingId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CommiteeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExeptionalBudgetingId")
                         .HasColumnType("int");
 
                     b.Property<int?>("FeesId")
@@ -558,6 +565,8 @@ namespace HomeOwnerAssociation_WebApp.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CommiteeId");
+
                     b.HasIndex("HOAId");
 
                     b.HasIndex("MaintenanceHistoryId");
@@ -592,9 +601,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                     b.Property<int?>("HOAId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MaintenanceHistoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -602,8 +608,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("HOAId");
-
-                    b.HasIndex("MaintenanceHistoryId");
 
                     b.ToTable("PropertyOwners");
                 });
@@ -899,13 +903,13 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                         .WithMany("Budgetings")
                         .HasForeignKey("HOAId");
 
-                    b.HasOne("HomeOwnerAssociation_WebApp.Models.Property", "Property")
+                    b.HasOne("HomeOwnerAssociation_WebApp.Models.Property", "Propertys")
                         .WithMany("Budgeting")
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Property");
+                    b.Navigation("Propertys");
                 });
 
             modelBuilder.Entity("HomeOwnerAssociation_WebApp.Models.DeedRestriction", b =>
@@ -930,8 +934,8 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                         .HasForeignKey("FinancialManagementId");
 
                     b.HasOne("HomeOwnerAssociation_WebApp.Models.Property", "Property")
-                        .WithMany()
-                        .HasForeignKey("PropertyId")
+                        .WithOne("ExeptionalBudgeting")
+                        .HasForeignKey("HomeOwnerAssociation_WebApp.Models.ExeptionalBudgeting", "PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -977,6 +981,10 @@ namespace HomeOwnerAssociation_WebApp.Migrations
 
             modelBuilder.Entity("HomeOwnerAssociation_WebApp.Models.Property", b =>
                 {
+                    b.HasOne("HomeOwnerAssociation_WebApp.Models.Commitee", "Commitee")
+                        .WithMany("Property")
+                        .HasForeignKey("CommiteeId");
+
                     b.HasOne("HomeOwnerAssociation_WebApp.Models.HOA", null)
                         .WithMany("Properties")
                         .HasForeignKey("HOAId");
@@ -994,6 +1002,8 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                         .HasForeignKey("propertyOwnerId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.Navigation("Commitee");
+
                     b.Navigation("PropertyType");
 
                     b.Navigation("propertyOwner");
@@ -1004,10 +1014,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                     b.HasOne("HomeOwnerAssociation_WebApp.Models.HOA", null)
                         .WithMany("HouseOwners")
                         .HasForeignKey("HOAId");
-
-                    b.HasOne("HomeOwnerAssociation_WebApp.Models.MaintenanceHistory", null)
-                        .WithMany("Owner")
-                        .HasForeignKey("MaintenanceHistoryId");
                 });
 
             modelBuilder.Entity("HomeOwnerAssociation_WebApp.Models.Rule", b =>
@@ -1019,12 +1025,17 @@ namespace HomeOwnerAssociation_WebApp.Migrations
 
             modelBuilder.Entity("HomeOwnerAssociation_WebApp.Models.Vendor", b =>
                 {
-                    b.HasOne("HomeOwnerAssociation_WebApp.Models.Property", "Property")
+                    b.HasOne("HomeOwnerAssociation_WebApp.Models.Property", "Propertys")
                         .WithMany("Vendor")
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Propertys");
+                });
+
+            modelBuilder.Entity("HomeOwnerAssociation_WebApp.Models.Commitee", b =>
+                {
                     b.Navigation("Property");
                 });
 
@@ -1062,8 +1073,6 @@ namespace HomeOwnerAssociation_WebApp.Migrations
 
             modelBuilder.Entity("HomeOwnerAssociation_WebApp.Models.MaintenanceHistory", b =>
                 {
-                    b.Navigation("Owner");
-
                     b.Navigation("property");
                 });
 
@@ -1072,6 +1081,9 @@ namespace HomeOwnerAssociation_WebApp.Migrations
                     b.Navigation("Assessment");
 
                     b.Navigation("Budgeting");
+
+                    b.Navigation("ExeptionalBudgeting")
+                        .IsRequired();
 
                     b.Navigation("Fees");
 

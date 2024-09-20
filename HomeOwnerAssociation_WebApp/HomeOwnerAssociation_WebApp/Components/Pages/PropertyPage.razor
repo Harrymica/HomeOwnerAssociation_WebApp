@@ -117,12 +117,16 @@
 
     private string? SearchInput;
 
+
+   
     protected override async Task OnInitializedAsync()
     {
 
 
         var property = await propertyService.GetAllPropertiresAsync();
         properties = property;
+
+       
 
         using var db = await _factory.CreateDbContextAsync();
         _propertyType = await db.PropertyTypes.ToListAsync();
@@ -168,6 +172,14 @@
     public async Task EditCommitee(int Id)
     {
         NavigationManager.NavigateTo($"addproperty/{Id}");
+    }
+
+
+
+    public class Menu
+    {
+        public Property Item { get; set; }
+        public bool ShowDropdown { get; set; }
     }
 
 }

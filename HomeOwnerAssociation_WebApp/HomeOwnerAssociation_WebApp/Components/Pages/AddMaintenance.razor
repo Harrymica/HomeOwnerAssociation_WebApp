@@ -2,6 +2,7 @@
 @page "/addmaintenance/{id:int?}"
 @layout CustomLayout
 @inject IPropertyOwnerService propOwnerService
+@inject IPropertyServiceRepo propService
 @inject IMaintenanceService _mainServ
 @inject IToastService toast
 @rendermode InteractiveServer
@@ -12,7 +13,7 @@
 
 <div class="bg-gray-100 flex-1 p-6 md:mt-16">
 
-    @_propertyOwners.FullName
+    Add maintenance for @_getproperty.Name
     <div class="row">
         <div class="col-lg-12">
 
@@ -91,15 +92,16 @@
     public int? Id { get; set; }
 
     private Fee _fee = new Fee();
-    private PropertyOwners _propertyOwners = new PropertyOwners();
+    //private PropertyOwners _propertyOwners = new PropertyOwners();
     private List<Property> _property = new List<Property>();
+    private Property _getproperty = new Property();
 
     private MaintenanceHistory _maintenance = new MaintenanceHistory(); 
 
     protected override async Task OnInitializedAsync()
     {
         using var db = _factory.CreateDbContextAsync();
-        var prop = await db.Result.Properties.Where(u => u.propertyOwnerId == Id.Value).ToListAsync();
+        var prop = await db.Result.Properties.Where(u => u.Id == Id.Value).ToListAsync();
         _property = prop;
 
     }
@@ -107,12 +109,12 @@
     {
         if (Id != null)
         {
-            if (propOwnerService != null)
+            if (propService != null)
             {
 
 
-                var result = await propOwnerService.GetOwnerById(Id.Value);
-                _propertyOwners = result;
+                var result = await propService.GetPropertyById(Id.Value);
+                _getproperty = result;
 
 
             }
@@ -122,12 +124,10 @@
 
     public async Task Submit()
     {
-        _maintenance.OwnerId = _propertyOwners.Id;
-        /* var result =  */  await _mainServ.AddMaintenances(_maintenance);
+        //_maintenance.OwnerId = _propertyOwners.Id;
+        await _mainServ.AddMaintenances(_maintenance);
 
-        // if (result.IsCompletedSuccessfully)
-        // {
-           toast.ShowSuccess($"{_maintenance.Name}, Added Successfully");
-        //}
+        toast.ShowSuccess($"{_maintenance.Name}, Added Successfully");
+        
     }
 }

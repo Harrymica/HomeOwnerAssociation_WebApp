@@ -2,6 +2,7 @@
 @page "/addbudgeting/{id:int?}"
 @layout CustomLayout
 @inject IPropertyOwnerService propOwnerService
+@inject IPropertyServiceRepo propertyServ
 @inject IMaintenanceService _mainServ
 @inject IBudgetingRepositoryService budgetServ
 @inject IToastService toast
@@ -13,7 +14,7 @@
 
 <div class="bg-gray-100 flex-1 p-6 md:mt-16">
 
-    @_propertyOwners.FullName
+    Adding Budget for @_getproperty.Name
     <div class="row">
         <div class="col-lg-12">
 
@@ -22,7 +23,7 @@
                     <h5 class="card-title text-center">Maintenance Form</h5>
 
 
-                    <!-- General Form Elements -->
+                  
                     <div>
                         <div class="row mb-3">
                             <label for="text" class="col-sm-2 col-form-label">Name </label>
@@ -101,14 +102,20 @@
 
     private Budgeting _budgeting = new Budgeting();
 
+
+
     private Fee _fee = new Fee();
-    private PropertyOwners _propertyOwners = new PropertyOwners();
+    //private PropertyOwners _propertyOwners = new PropertyOwners();
+
     private List<Property> _property = new List<Property>();
+    private Property _getproperty = new Property();
 
     private MaintenanceHistory _maintenance = new MaintenanceHistory();
 
     protected override async Task OnInitializedAsync()
     {
+
+
         using var db = _factory.CreateDbContextAsync();
         var prop = await db.Result.Properties.Where(u => u.propertyOwnerId == Id.Value).ToListAsync();
         _property = prop;
@@ -122,8 +129,8 @@
             {
 
 
-                var result = await propOwnerService.GetOwnerById(Id.Value);
-                _propertyOwners = result;
+                var result = await propertyServ.GetPropertyById(Id.Value);
+                _getproperty = result;
 
 
             }
@@ -133,13 +140,15 @@
 
     public async Task Submit()
     {
-        _maintenance.OwnerId = _propertyOwners.Id;
         
-        
+        _budgeting.PropertyId = _getproperty.Id;
+
         await budgetServ.AddBudgeting(_budgeting);
 
         
-        toast.ShowSuccess($"{_maintenance.Name}, Added Successfully");
+        toast.ShowSuccess($"{_budgeting.Name}, Added Successfully");
         
     }
+
+    
 }

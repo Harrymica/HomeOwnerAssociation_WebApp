@@ -133,7 +133,7 @@
                                                             <div class="py-1" role="none">
 
                                                                 <button type="submit" @onclick="() => EditCommitee(item.Item.Id)" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Edit</button>
-                                                                <a href="/addfees/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">AddFees</a>
+                                                              @*   <a href="/addfees/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">AddFees</a> *@
                                                             </div>
 
                                                             <div class="py-1" role="none">
@@ -142,14 +142,7 @@
                                                                 <a href="/specificproperty/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Property</a>
                                                             </div>
 
-                                                            <div class="py-1" role="none">
-                                                                <a href="/fees/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">Fees</a>
-                                                                <a href="/maintenancepage/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-3">Maintenance History</a>
-                                                            </div>
-                                                            <div class="py-1" role="none">
-                                                                <a href="/addmaintenance/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-4">Add Maintenances</a>
-                                                                <a href="budgeting/@item.Item.Id" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-5">Budgets</a>
-                                                            </div>
+                                                            
                                                             <div class="py-1" role="none">
                                                                 <button type="submit" @onclick="() => Delete(item.Item)" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-6">Delete</button>
                                                             </div>
@@ -211,12 +204,6 @@
         }
     }
 
-    // [JSInvokable]
-    // public  void ShowDropdownMenu()
-    // {
-    //     jSRuntime.InvokeVoidAsync("showDropdownMenu");
-    // }
-
     private void ShowDropdownMenu()
     {
         showDropdown = !showDropdown;
@@ -226,14 +213,15 @@
     {
 
 
-        var property = await OwnerService.GetAllOwnersAsync();
-        _owner = property;
+        var owner = await OwnerService.GetAllOwnersAsync();
+        _owner = owner;
 
-        MenuItems = property.Select(p => new MenuItem { Item = p, ShowDropdown = false }).ToList();
+        MenuItems = owner.Select(p => new MenuItem { Item = p, ShowDropdown = false }).ToList();
 
         using var db = await _factory.CreateDbContextAsync();
         _propertyType = await db.PropertyTypes.ToListAsync();
     }
+
     private string CreateWebPath(string relativePath)
     {
         return Path.Combine(config.GetValue<string>("WebStorageRoot")!, relativePath);
@@ -262,31 +250,31 @@
         {
 
             //using var db = await _factory.CreateDbContextAsync();
-            try
-            {
-                //var result = OwnerService.DeleteOwnerAsync(Owner.Id);
+            // try
+            // {
+            //     //var result = OwnerService.DeleteOwnerAsync(Owner.Id);
 
-                if (result.IsCompletedSuccessfully)
-                {
+            //     if (result.IsCompletedSuccessfully)
+            //     {
 
                     //var res = db.PropertyOwners.Remove(Owner);           
-                    toast.ShowWarning($"{Owner.FullName}, Added Successully");
+                    toast.ShowWarning($"{Owner.FullName}, and all his component is Deleted Successully");
                     await Task.Delay(1500);
                     NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
 
-                }
-                else
-                {
-                    toast.ShowWarning($"{result.Exception!.Message}");
-                    // ErrorMsg = result.Exception.Message.ToString();
-                    // StateHasChanged();
+                // }
+                // else
+                // {
+                //     toast.ShowWarning($"{result.Exception!.Message}");
+                //     // ErrorMsg = result.Exception.Message.ToString();
+                //     // StateHasChanged();
 
-                }
-            }
-            catch (Exception ex)
-            {
-                toast.ShowError($"{ex.Message}");
-            }
+                // }
+            // }
+            // catch (Exception ex)
+            // {
+            //     toast.ShowError($"{ex.Message}");
+            // }
 
         }
         else

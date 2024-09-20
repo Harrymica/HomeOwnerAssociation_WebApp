@@ -12,16 +12,7 @@ namespace HomeOwnerAssociation_WebApp.Models
         public string Phone { get; set; }
         // One-to-many relationship with Properties
         public List<Property>? Properties { get; set; }
-
-        //public List<Fee>? Fees { get; set; }
-        //[ForeignKey(nameof(Fee))]
-        //public int FeesId { get; set; }
-
-        
-
-        
-
-
+      
     }
 }
 

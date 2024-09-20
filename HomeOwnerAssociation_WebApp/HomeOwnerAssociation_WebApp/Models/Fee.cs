@@ -15,14 +15,11 @@ namespace HomeOwnerAssociation_WebApp.Models
 
         [ForeignKey(nameof(Property))]
         public int PropertyId { get; set; }
-        //public PropertyOwners PropertyOwners { get; set; }
-
-        //[ForeignKey(nameof(PropertyOwners))]
-        //public int PropertyOwnersId { get; set; }
+       
         public DateTime DateForMonthlyPayment { get; set; }
         public string Status { get; set; } = "Not Paid";
 
-        //public decimal? Assessment { get; set; }
+       
         public decimal? RemainingDept { get; set; }
     }
 

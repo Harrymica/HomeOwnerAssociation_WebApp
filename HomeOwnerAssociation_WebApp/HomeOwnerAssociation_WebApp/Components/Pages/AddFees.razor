@@ -18,15 +18,15 @@
 
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title text-center">General Form Elements</h5>
+                <h5 class="card-title text-center">General Fees Form </h5>
 
                    
-                        <!-- General Form Elements -->
+                      
                         <div>
                             <div class="row mb-3">
                             <label for="text" class="col-sm-2 col-form-label">Owner Id</label>
                             <div class="col-sm-8">
-                                @_propertyOwners.FullName
+                               Adding Fees for @_getproperty.Name
                             </div>
                         </div>
 
@@ -56,28 +56,31 @@
                                 </div>
                             </div>
 
-                            <div class="row mb-3">
-                                <label for="text" class="col-sm-2 col-form-label">Frequency</label>
-                                <div class="col-sm-8">
-                                <input @bind-value="_fee.Frequency" type="text" class="form-control">
-                                </div>
+                           
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label"> Frequency </label>
+                            <div class="col-sm-8">
+                                <InputSelect @bind-Value="_fee.Frequency" type="text" class="form-control">
+                                    <option disabled>Select Property</option>>
+
+                                    <option value="@_fee.Frequency">Monthly</option>
+                                    <option value="@_fee.Frequency">Yearly</option>
+
+                                   
+                                </InputSelect>
                             </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="text" class="col-sm-2 col-form-label">Remaining Balance</label>
+                            <div class="col-sm-8">
+                                <input @bind-value="_fee.RemainingDept" type="number" class="form-control">
+                            </div>
+                        </div>
 
                             
                         
-                            <div class="row mb-3">
-                                <label for="text" class="col-sm-2 col-form-label"> Property || @_fee.PropertyId</label>
-                                <div class="col-sm-8">
-                                    <InputSelect @bind-Value="_fee.PropertyId" type="text" class="form-control">
-                                        <option>Select Property</option>>
-                                        @foreach (var item in _property)
-                                    {
-                                          <option value="@item.Id">@item.Name</option>
-                       
-                                    }
-                                    </InputSelect>
-                                </div>
-                            </div>
+                            
 
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label">Submit Button</label>
@@ -87,7 +90,7 @@
                             </div>
                         </div>
 
-                        <!-- End General Form Elements -->
+                        
                     
 
             </div>
@@ -105,8 +108,9 @@
     public int? Id { get; set; } 
 
     private Fee _fee = new Fee();
-    private PropertyOwners _propertyOwners = new PropertyOwners();
     private List<Property> _property = new List<Property>();
+    private Property _getproperty = new Property();
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -123,8 +127,8 @@
             {
 
 
-                var result = await propOwnerService.GetOwnerById(Id.Value);
-                _propertyOwners = result;
+                var result = await propService.GetPropertyById(Id.Value);
+                _getproperty = result;
 
             }
         }
@@ -135,18 +139,28 @@
 
     public async Task Submit()
     {
+        _fee.PropertyId = _getproperty.Id;
         if(Id != null)
         {
-            _fee.Status = "Paid";
-            //_fee.PropertyOwnersId = _propertyOwners.Id;
+          
+            if(_fee.RemainingDept <= 0.00m)
+            {
+               
+                _fee.Status = "Paid";
+            }
+            else
+            {
+                _fee.Status = "InComePlete Payment";
+            }
+
             await FeeService.AddFees(_fee);
-           // await FeeService.EditFees(_fee);
-            toast.ShowInfo("Fees Edited Succesfully");
+          
+            toast.ShowSuccess("Fees Edited Succesfully");
 
         }
         else
         {
-            //_fee.PropertyOwnersId = _propertyOwners.Id;  
+           
             await FeeService.AddFees(_fee);
             toast.ShowSuccess("Fees Added Succesfully");
         }

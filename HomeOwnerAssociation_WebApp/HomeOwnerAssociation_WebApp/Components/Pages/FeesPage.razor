@@ -1,7 +1,8 @@
 ﻿@page "/fees"
 @page "/fees/{id:int?}"
 @inject IToastService toast
-@inject IPropertyOwnerService OwnerService
+@* @inject IPropertyOwnerService OwnerService *@
+@inject IPropertyServiceRepo propService
 @inject IFeesService FeeService
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
@@ -49,6 +50,9 @@
                             <th class="px-4 py-2">Frequency</th>
                             <th class="px-4 py-2">TransactionId</th>
                             <th class="px-4 py-2">Date</th>
+                            <th class="px-4 py-2">Balance</th>
+                            <th class="px-4 py-2">Status</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -61,6 +65,23 @@
                             <td class="px-4 py-2">@fee.Frequency</td>
                             <td class="px-4 py-2">@fee.BankTransactionId</td>
                             <td class="px-4 py-2">@fee.DateForMonthlyPayment.ToString("dd/MM/yyyy") </td>
+                            <td class="px-4 py-2">@fee.RemainingDept </td>
+                                <td>
+                                    @if (fee != null)
+                                    {
+                                    <td class="px-4 py-2">
+                                            @fee.Status
+                                    </td>
+                                    }
+
+                                    else
+                                    {
+
+                                    <td class="px-4 py-2">
+                                        Not Paid
+                                    </td>
+                                    }
+                                </td>
                         </tr>
                          }
                         
@@ -80,6 +101,7 @@
                             <th class="px-4 py-2">Location</th>
                             <th class="px-4 py-2">Units</th>
                             <th class="px-4 py-2">Status</th>
+                            <th class="px-4 py-2">Balance</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,7 +114,7 @@
                                 <td class="px-4 py-2">@prop.Address</td>
                                 <td class="px-4 py-2">@prop.Location</td>
                                 <td class="px-4 py-2">@prop.Units</td>
-                                    @if(fees != null)
+                                 <td> @if(fees != null)
                                     {
                                         <td class="px-4 py-2">
                                              @fees.Status  
@@ -105,6 +127,8 @@
                                             Not Paid
                                     </td>
                                     }
+                                 </td>
+                                 <td>@fees.RemainingDept</td>
 
                         </tr>
                          }
@@ -139,6 +163,7 @@
     private PropertyOwners _owner = new PropertyOwners();
     public List<Property> _Newproperty = new List<Property>();
 
+    private Property _getproperty = new Property();
     private string? SearchInput;
 
     protected override async Task OnInitializedAsync()
@@ -160,11 +185,11 @@
 
             var Dfee = await db.Result.Fees.Where(u => u.PropertyId == Id.Value).ToListAsync(); //FeeService.GetAllFeesAsync();
             _fee = Dfee;
-            if (OwnerService != null)
+            if (propService != null)
             {
              
-                var result = await OwnerService.GetOwnerById(Id.Value);
-                _owner = result;
+                var result = await propService.GetPropertyById(Id.Value);
+                _getproperty = result;
 
                 var propertyResult = await db.Result.Properties.Where(u => u.propertyOwnerId == result.Id).ToListAsync();
                 _Newproperty = propertyResult;
@@ -221,7 +246,7 @@
 
     public async Task Delete(Fee fee)
     {
-        await OwnerService.DeleteOwnerAsync(fee.Id);
+        await FeeService.DeleteFeesAsync(fee.Id);
         toast.ShowWarning($"fees is deleted succesfully");
         await Task.Delay(500);
         NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
@@ -230,7 +255,7 @@
 
     public async Task EditCommitee(int Id)
     {
-        NavigationManager.NavigateTo($"addpropertyowner/{Id}");
+        NavigationManager.NavigateTo($"addfees/{Id}");
     }
 
 }

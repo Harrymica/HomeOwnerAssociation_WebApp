@@ -12,5 +12,9 @@ namespace HomeOwnerAssociation_WebApp.Models
         public string Email { get; set;}
         public string BankAccount { get; set;}
         public string UsedCurrency { get; set; }
+        
+        public List<Property> Property { get; set; }
+        public int PropertyId { get; set; }
+       
     }
 }
